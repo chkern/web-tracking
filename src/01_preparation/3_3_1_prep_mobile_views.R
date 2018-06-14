@@ -1,6 +1,6 @@
 library(pacman)
 p_load(tidyverse, foreign, haven, data.table, dummies)
-setwd("C:\\Users\\Lukas\\Desktop\\New folder\\")
+setwd("Z:\\Respondi\\")
 
 mobile_views <- readRDS(file = ".\\original daten\\mobile_views.rds")
 
@@ -1129,10 +1129,28 @@ mv_prep <- merge(mv_prep, n_dom, by="panelist_id", all.x = TRUE)
 rm(n_dom)
 mv_prep <- merge(mv_prep, n_app, by="panelist_id", all.x = TRUE)
 rm(n_app)
-mv_prep <- merge(mv_prep, time_dom, by="panelist_id", all.x = TRUE)
-rm(time_dom)
-mv_prep <- merge(mv_prep, time_apps, by="panelist_id", all.x = TRUE)
-rm(time_apps)
+
+app_name <- names(time_apps)
+dom_name <- names(time_dom)
+
+app_name <- paste0('app_', app_name)
+dom_name <- paste0('dom_', dom_name)
+
+time_apps <- set_names(time_apps, nm = app_name)
+time_dom <- set_names(time_dom, nm = dom_name)
+
+time_apps <- rename(time_apps, panelist_id = app_panelist_id)
+time_dom <- rename(time_dom, panelist_id = dom_panelist_id)
+
+rm(dom_name, app_name)
+
+time_data <- merge(time_dom, time_apps, by="panelist_id", all = TRUE)
+rm(time_dom, time_apps)
+
+time_data[is.na(time_data)] <- 0
+
+mv_prep <- merge(mv_prep, time_data, by="panelist_id", all.x = TRUE)
+rm(time_data)
 mv_prep <- merge(mv_prep, media_usage, by="panelist_id", all.x = TRUE)
 rm(media_usage)
 

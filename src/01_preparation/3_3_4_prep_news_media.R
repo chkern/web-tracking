@@ -7,19 +7,6 @@ p_load(tidyverse, foreign, haven, data.table, dummies, caret, magrittr, randomFo
 
 setwd("\\\\nas.uni-mannheim.de\\uni-shares\\swnsswml\\Respondi\\")
 
-media_sites <- read.csv(file=".\\media_landscape\\50 most used news sites_clean.csv", header=TRUE, sep = ";")
-media_sites$X <- NULL
-#drop unnecessary characters from domains
-media_sites$domain <- gsub("http","",media_sites$domain)
-media_sites$domain <- gsub("s:","",media_sites$domain)
-media_sites$domain <- gsub(":","",media_sites$domain)
-media_sites$domain <- gsub("//","",media_sites$domain)
-media_sites$domain <- gsub("/","",media_sites$domain)
-media_sites$domain <- gsub("www.","",media_sites$domain)
-
-#gen identifier that will tell us after merge if news media domain
-media_sites$news_media <- 1
-
 media_appnames <- read.csv(file=".\\media_landscape\\50mostusednewssites_apps_clean.csv", header=TRUE, sep = ";")
 media_appnames$X <- NULL
 media_appnames$App <- NULL
@@ -29,13 +16,9 @@ media_appnames$App3 <- NULL
 
 mobile_views <- readRDS(file = "./original daten/mobile_views.rds")
 
-MV_sites <- mobile_views %>%
-  filter(is.na(app_n)) %>%
-  filter(is.na(app_os))
-
 MV_apps <- mobile_views %>%
   filter(!(is.na(app_n)))
-
+rm(mobile_views)
 
 
 v1 <- as.data.frame(unique(MV_apps$app_n[grep(media_appnames$App4[1], MV_apps$app_n)]))
@@ -228,79 +211,65 @@ names(media_apps)[1]<-"app_n"
 
 media_apps$news_app <- 1
 
-
-
 rm(media_appnames)
-rm(MV_apps,MV_sites, v1, v10, v13, v2, v20, v22, v23, v24, v3, v37, v4, v40, v6,v7,v8,v9)
+rm(v1, v10, v13, v2, v20, v22, v23, v24, v3, v37, v4, v40, v6,v7,v8,v9)
 
 
 ###MERGE TO MOBILE VIEWS
-mobile_views <- merge(mobile_views, media_apps, by="app_n", all=TRUE)
-mobile_views$news_app[is.na(mobile_views$news_app)] <- 0
+MV_apps <- merge(MV_apps, media_apps, by="app_n", all=TRUE)
+MV_apps$news_app[is.na(MV_apps$news_app)] <- 0
 rm(media_apps)
 
-mobile_views <- merge(mobile_views, media_sites, by="domain", all=TRUE)
-mobile_views$news_media[is.na(mobile_views$news_media)] <- 0
-
-mobile_views$short_dom <- substr(mobile_views$domain, 1, 9)
-mobile_views$facebook_site <- ifelse(mobile_views$short_dom=="facebook.", yes = 1, no = 0)
-mobile_views$short_dom <- NULL
-mobile_views$facebook_app <- ifelse(mobile_views$app_n=="Facebook" |
-                                    mobile_views$app_n=="Facebook Lite" |
-                                    mobile_views$app_n=="Facebook Groups" |
-                                    mobile_views$app_n=="Facebook Pages Manager",
+MV_apps$facebook_app <- ifelse(MV_apps$app_n=="Facebook" |
+                                 MV_apps$app_n=="Facebook Lite" |
+                                 MV_apps$app_n=="Facebook Groups" |
+                                 MV_apps$app_n=="Facebook Pages Manager",
                                     yes = 1, no = 0)
 
-mobile_views$facebook_site <- ifelse(mobile_views$facebook_app==1, 1, mobile_views$facebook_site)
-mobile_views$news_media <- ifelse(mobile_views$news_app==1, 1, mobile_views$news_media)
-mobile_views <- mobile_views %>% 
-  select(-c(facebook_app, news_app)) %>% 
-  rename(facebook = facebook_site)
-
-
-totals <- mobile_views %>%
+#################APP info
+a_totals <- MV_apps %>%
   group_by(panelist_id) %>% 
   summarise(
     tot_n = n(),
     tot_d = sum(duration, na.rm = TRUE)
   )
 
-fb_share2 <- mobile_views %>% 
-  group_by(panelist_id, facebook) %>%
+a_fb_share2 <- MV_apps %>% 
+  group_by(panelist_id, facebook_app) %>%
   summarise(
     fb_tot_n = n(),
     fb_tot_d = sum(duration, na.rm = TRUE))  
 
-fb_share2 <- merge(fb_share2, totals, by="panelist_id")
+a_fb_share2 <- merge(a_fb_share2, a_totals, by="panelist_id")
 
-fb_share2 <- fb_share2 %>%
+a_fb_share2 <- a_fb_share2 %>%
   mutate(
     fb_rel_n = fb_tot_n/tot_n,
     fb_rel_d = fb_tot_d/tot_d
   ) %>% 
-  filter(facebook==1)
+  filter(facebook_app==1)
 
-media_share2 <- mobile_views %>% 
-  group_by(panelist_id, news_media) %>%
+a_media_share2 <- MV_apps %>% 
+  group_by(panelist_id, news_app) %>%
   summarise(
     news_tot_n = n(),
     news_tot_d = sum(duration, na.rm = TRUE))  
 
-media_share2 <- merge(media_share2, totals, by="panelist_id")
+a_media_share2 <- merge(a_media_share2, a_totals, by="panelist_id")
 
-media_share2 <- media_share2 %>%
+a_media_share2 <- a_media_share2 %>%
   mutate(
     news_rel_n = news_tot_n/tot_n,
     news_rel_d = news_tot_d/tot_d
   ) %>% 
-  filter(news_media==1)
+  filter(news_app==1)
 
-media_usage <- merge(totals, fb_share2, by=c("panelist_id", "tot_n", "tot_d"), all = TRUE)
-media_usage <- merge(media_usage, media_share2, by=c("panelist_id", "tot_n", "tot_d"), all = TRUE)
+media_usage <- merge(a_totals, a_fb_share2, by=c("panelist_id", "tot_n", "tot_d"), all = TRUE)
+media_usage <- merge(media_usage, a_media_share2, by=c("panelist_id", "tot_n", "tot_d"), all = TRUE)
 
 media_usage[is.na(media_usage)] <- 0
 
-media_usage <- select(media_usage, -c(facebook, news_media))
+media_usage <- select(media_usage, -c(facebook_app, news_app))
 
 media_usage <- mutate(media_usage,
                       fb_news_tot_n = fb_tot_n + news_tot_n,
@@ -314,96 +283,139 @@ media_usage$fb_news_rel_d[is.na(media_usage$fb_news_rel_d)] <- 0.5
 media_usage$tot_d <- NULL
 media_usage$tot_n <- NULL
 
-rm(fb_share2, media_share2, totals)
+rm(a_fb_share2, a_media_share2, a_totals)
 
-saveRDS(media_usage, file = "./data_pieces/MV_FB_News.RDS")
-rm(mobile_views, media_usage)
+app_names <- names(media_usage)
+app_names <- paste0('app_', app_names)
+media_usage <- set_names(media_usage, nm = app_names)
 
-
-#merge to tracking data ----WEB VISITS
-web_visits <- readRDS(file = ".\\original daten\\web_visits.rds")
-
-web_visits <- merge(web_visits, media_sites, by="domain", all=TRUE)
-web_visits$news_media[is.na(web_visits$news_media)] <- 0
-
-web_visits$short_dom <- substr(web_visits$domain, 1, 9)
-web_visits$facebook <- ifelse(web_visits$short_dom=="facebook.", yes = 1, no = 0)
-web_visits$short_dom <- NULL
+media_usage <- rename(media_usage, panelist_id = app_panelist_id)
+rm(app_names, MV_apps)
 
 
-totals <- web_visits %>%
+saveRDS(media_usage, file = "./data/mv_app_news_media_final.RDS")
+
+rm(media_usage)
+
+
+########################################################################
+##repeat for SITES of mobile visits
+########################################################################
+
+
+media_sites <- read.csv(file=".\\media_landscape\\50 most used news sites_clean.csv", header=TRUE, sep = ";")
+media_sites$X <- NULL
+#drop unnecessary characters from domains
+media_sites$domain <- gsub("http","",media_sites$domain)
+media_sites$domain <- gsub("s:","",media_sites$domain)
+media_sites$domain <- gsub(":","",media_sites$domain)
+media_sites$domain <- gsub("//","",media_sites$domain)
+media_sites$domain <- gsub("/","",media_sites$domain)
+media_sites$domain <- gsub("www.","",media_sites$domain)
+
+#gen identifier that will tell us after merge if news media domain
+media_sites$news_media <- 1
+
+
+mobile_views <- readRDS(file = "./original daten/mobile_views.rds")
+
+MV_sites <- mobile_views %>%
+  filter(is.na(app_n)) %>%
+  filter(is.na(app_os))
+
+rm(mobile_views)
+
+MV_sites <- merge(MV_sites, media_sites, by="domain", all=TRUE)
+MV_sites$news_media[is.na(MV_sites$news_media)] <- 0
+
+MV_sites$short_dom <- substr(MV_sites$domain, 1, 9)
+MV_sites$facebook_site <- ifelse(MV_sites$short_dom=="facebook.", yes = 1, no = 0)
+MV_sites$short_dom <- NULL
+
+
+
+#################DOMAIN info
+d_totals <- MV_sites %>%
   group_by(panelist_id) %>% 
   summarise(
     tot_n = n(),
     tot_d = sum(duration, na.rm = TRUE)
   )
 
-fb_share2 <- web_visits %>% 
-  group_by(panelist_id, facebook) %>%
+d_fb_share2 <- MV_sites %>% 
+  group_by(panelist_id, facebook_site) %>%
   summarise(
     fb_tot_n = n(),
     fb_tot_d = sum(duration, na.rm = TRUE))  
 
-fb_share2 <- merge(fb_share2, totals, by="panelist_id")
+d_fb_share2 <- merge(d_fb_share2, d_totals, by="panelist_id")
 
-fb_share2 <- fb_share2 %>%
+d_fb_share2 <- d_fb_share2 %>%
   mutate(
     fb_rel_n = fb_tot_n/tot_n,
     fb_rel_d = fb_tot_d/tot_d
   ) %>% 
-  filter(facebook==1)
+  filter(facebook_site==1)
 
-media_share2 <- web_visits %>% 
+d_media_share2 <- MV_sites %>% 
   group_by(panelist_id, news_media) %>%
   summarise(
     news_tot_n = n(),
     news_tot_d = sum(duration, na.rm = TRUE))  
 
-media_share2 <- merge(media_share2, totals, by="panelist_id")
+d_media_share2 <- merge(d_media_share2, d_totals, by="panelist_id")
 
-media_share2 <- media_share2 %>%
+d_media_share2 <- d_media_share2 %>%
   mutate(
     news_rel_n = news_tot_n/tot_n,
     news_rel_d = news_tot_d/tot_d
   ) %>% 
   filter(news_media==1)
 
-media_usage <- merge(totals, fb_share2, by=c("panelist_id", "tot_n", "tot_d"), all = TRUE)
-media_usage <- merge(media_usage, media_share2, by=c("panelist_id", "tot_n", "tot_d"), all = TRUE)
+media_usage <- merge(d_totals, d_fb_share2, by=c("panelist_id", "tot_n", "tot_d"), all = TRUE)
+media_usage <- merge(media_usage, d_media_share2, by=c("panelist_id", "tot_n", "tot_d"), all = TRUE)
 
 media_usage[is.na(media_usage)] <- 0
 
-media_usage <- select(media_usage, -c(facebook, news_media))
+media_usage <- select(media_usage, -c(facebook_site, news_media))
 
 media_usage <- mutate(media_usage,
                       fb_news_tot_n = fb_tot_n + news_tot_n,
                       fb_news_tot_d = fb_tot_d + news_tot_d,
                       fb_news_rel_n = fb_tot_n / fb_news_tot_n,
                       fb_news_rel_d = fb_tot_d / fb_news_tot_d
-                      )  
+)  
 media_usage$fb_news_rel_n[is.na(media_usage$fb_news_rel_n)] <- 0.5
 media_usage$fb_news_rel_d[is.na(media_usage$fb_news_rel_d)] <- 0.5
 
 media_usage$tot_d <- NULL
 media_usage$tot_n <- NULL
 
-rm(fb_share2, media_share2, totals)
+rm(d_fb_share2, d_media_share2, d_totals)
 
-saveRDS(media_usage, file = "./data_pieces/WV_FB_News.RDS")
-rm(web_visits, media_usage)
+dom_names <- names(media_usage)
+dom_names <- paste0('dom_', dom_names)
+media_usage <- set_names(media_usage, nm = dom_names)
+
+media_usage <- rename(media_usage, panelist_id = dom_panelist_id)
+rm(dom_names, MV_sites)
+
+
+saveRDS(media_usage, file = "./data/mv_dom_news_media_final.RDS")
+
+rm(media_usage)
 
 
 
-#merge to tracking data ----WEB Pageviews
+
+#################DOMAIN info
 web_pageviews <- readRDS(file = ".\\data\\web_pageviews_prep.rds")
-
 web_pageviews <- merge(web_pageviews, media_sites, by="domain", all=TRUE)
 web_pageviews$news_media[is.na(web_pageviews$news_media)] <- 0
 
 web_pageviews$short_dom <- substr(web_pageviews$domain, 1, 9)
 web_pageviews$facebook <- ifelse(web_pageviews$short_dom=="facebook.", yes = 1, no = 0)
 web_pageviews$short_dom <- NULL
-
 
 totals <- web_pageviews %>%
   group_by(panelist_id) %>% 
@@ -412,38 +424,38 @@ totals <- web_pageviews %>%
     tot_d = sum(active_seconds, na.rm = TRUE)
   )
 
-fb_share2 <- web_pageviews %>% 
+d_fb_share2 <- web_pageviews %>% 
   group_by(panelist_id, facebook) %>%
   summarise(
     fb_tot_n = n(),
     fb_tot_d = sum(active_seconds, na.rm = TRUE))  
 
-fb_share2 <- merge(fb_share2, totals, by="panelist_id")
+d_fb_share2 <- merge(d_fb_share2, totals, by="panelist_id")
 
-fb_share2 <- fb_share2 %>%
+d_fb_share2 <- d_fb_share2 %>%
   mutate(
     fb_rel_n = fb_tot_n/tot_n,
     fb_rel_d = fb_tot_d/tot_d
   ) %>% 
   filter(facebook==1)
 
-media_share2 <- web_pageviews %>% 
+d_media_share2 <- web_pageviews %>% 
   group_by(panelist_id, news_media) %>%
   summarise(
     news_tot_n = n(),
     news_tot_d = sum(active_seconds, na.rm = TRUE))  
 
-media_share2 <- merge(media_share2, totals, by="panelist_id")
+d_media_share2 <- merge(d_media_share2, totals, by="panelist_id")
 
-media_share2 <- media_share2 %>%
+d_media_share2 <- d_media_share2 %>%
   mutate(
     news_rel_n = news_tot_n/tot_n,
     news_rel_d = news_tot_d/tot_d
   ) %>% 
   filter(news_media==1)
 
-media_usage <- merge(totals, fb_share2, by=c("panelist_id", "tot_n", "tot_d"), all = TRUE)
-media_usage <- merge(media_usage, media_share2, by=c("panelist_id", "tot_n", "tot_d"), all = TRUE)
+media_usage <- merge(totals, d_fb_share2, by=c("panelist_id", "tot_n", "tot_d"), all = TRUE)
+media_usage <- merge(media_usage, d_media_share2, by=c("panelist_id", "tot_n", "tot_d"), all = TRUE)
 
 media_usage[is.na(media_usage)] <- 0
 
@@ -461,35 +473,18 @@ media_usage$fb_news_rel_d[is.na(media_usage$fb_news_rel_d)] <- 0.5
 media_usage$tot_d <- NULL
 media_usage$tot_n <- NULL
 
-rm(fb_share2, media_share2, totals)
+rm(d_fb_share2, d_media_share2, totals)
 
-saveRDS(media_usage, file = "./data_pieces/WP_FB_News.RDS")
-rm(web_pageviews, media_usage, media_sites)
+dom_names <- names(media_usage)
+dom_names <- paste0('dom_', dom_names)
+media_usage <- set_names(media_usage, nm = dom_names)
 
-WP_FB_News <- readRDS(file = "./data_pieces/WP_FB_News.RDS")
-WV_FB_News <- readRDS(file = "./data_pieces/WV_FB_News.RDS")
-MV_FB_News <- readRDS(file = "./data_pieces/MV_FB_News.RDS")
+media_usage <- rename(media_usage, panelist_id = dom_panelist_id)
+rm(dom_names, web_pageviews, media_sites)
 
-wv_names_sm <- names(WV_FB_News)
-wp_names_sm <- names(WP_FB_News)
-mv_names_sm <- names(MV_FB_News)
 
-wv_names_sm <- paste0('wv_', wv_names_sm)
-wp_names_sm <- paste0('wp_', wp_names_sm)
-mv_names_sm <- paste0('mv_', mv_names_sm)
+saveRDS(media_usage, file = "./data/wp_dom_news_media_final.RDS")
 
-WV_FB_News <- set_names(WV_FB_News, nm = wv_names_sm)
-WP_FB_News <- set_names(WP_FB_News, nm = wp_names_sm)
-MV_FB_News <- set_names(MV_FB_News, nm = mv_names_sm)
+rm(media_usage)
 
-WV_FB_News <- rename(WV_FB_News, panelist_id = wv_panelist_id)
-WP_FB_News <- rename(WP_FB_News, panelist_id = wp_panelist_id)
-MV_FB_News <- rename(MV_FB_News, panelist_id = mv_panelist_id)
 
-rm(mv_names_sm, wp_names_sm, wv_names_sm)
-
-news_media <- merge(MV_FB_News, WP_FB_News, by="panelist_id", all = TRUE)
-news_media <- merge(news_media, WV_FB_News, by="panelist_id", all = TRUE)
-rm(MV_FB_News, WP_FB_News, WV_FB_News)
-
-saveRDS(news_media, file = "./data/news_media_final.RDS")

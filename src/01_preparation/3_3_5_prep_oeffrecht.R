@@ -238,7 +238,7 @@ DOMAINS <- mobile_views %>%
   select(domain, panelist_id, duration, oeff_recht)
 
 
-totals <- DOMAINS %>%
+d_totals <- DOMAINS %>%
   group_by(panelist_id) %>% 
   summarise(
     tot_n = n(),
@@ -251,7 +251,7 @@ oer_share2 <- DOMAINS %>%
     oer_tot_n = n(),
     oer_tot_d = sum(duration, na.rm = TRUE))  
 
-oer_share2 <- merge(oer_share2, totals, by="panelist_id")
+oer_share2 <- merge(oer_share2, d_totals, by="panelist_id")
 
 oer_share2 <- oer_share2 %>%
   mutate(
@@ -263,7 +263,7 @@ oer_share2 <- oer_share2 %>%
 APPS <- mobile_views %>%
   filter(!(is.na(app_n)))
 
-totals <- APPS %>%
+a_totals <- APPS %>%
   group_by(panelist_id) %>% 
   summarise(
     tot_n = n(),
@@ -276,7 +276,7 @@ A_oer_share2 <- APPS %>%
     oer_tot_n = n(),
     oer_tot_d = sum(duration, na.rm = TRUE))  
 
-A_oer_share2 <- merge(A_oer_share2, totals, by="panelist_id")
+A_oer_share2 <- merge(A_oer_share2, a_totals, by="panelist_id")
 
 A_oer_share2 <- A_oer_share2 %>%
   mutate(
@@ -285,7 +285,7 @@ A_oer_share2 <- A_oer_share2 %>%
   ) %>% 
   filter(oer_app==1)
 
-rm(APPS, DOMAINS, totals)
+rm(APPS, DOMAINS)
 
 APP_names <- names(A_oer_share2)
 DOM_names <- names(oer_share2)
@@ -306,11 +306,12 @@ rm(A_oer_share2, oer_share2, mobile_views)
 
 #merge to tracking data ----WEB Pageviews
 web_pageviews <- readRDS(file = ".\\data\\web_pageviews_prep.rds")
+length(unique(web_pageviews$panelist_id))
 
 web_pageviews <- merge(web_pageviews, oeffrecht_sites, by="domain", all=TRUE)
 web_pageviews$oeff_recht[is.na(web_pageviews$oeff_recht)] <- 0
 
-totals <- web_pageviews %>%
+wp_totals <- web_pageviews %>%
   group_by(panelist_id) %>% 
   summarise(
     tot_n = n(),
@@ -323,7 +324,7 @@ wp_oer_share2 <- web_pageviews %>%
     oer_tot_n = n(),
     oer_tot_d = sum(active_seconds, na.rm = TRUE))  
 
-wp_oer_share2 <- merge(wp_oer_share2, totals, by="panelist_id")
+wp_oer_share2 <- merge(wp_oer_share2, wp_totals, by="panelist_id")
 
 wp_oer_share2 <- wp_oer_share2 %>%
   mutate(
@@ -332,37 +333,27 @@ wp_oer_share2 <- wp_oer_share2 %>%
   ) %>% 
   filter(oeff_recht==1)
 
-wp_OER_data <- merge(totals, wp_oer_share2, by=c("panelist_id", "tot_n", "tot_d"), all = TRUE)
+wp_OER_data <- merge(wp_totals, wp_oer_share2, by=c("panelist_id", "tot_n", "tot_d"), all = TRUE)
+# mv_OER_data <- merge(totals, mv_oer_share2, by=c("panelist_id"), all.x = TRUE)
+rm(oeffrecht_sites, web_pageviews, wp_oer_share2, a_totals, d_totals, wp_totals)
 
-rm(fb_share2, media_share2, totals)
+wp_names_sm <- names(wp_OER_data)
+mv_names_sm <- names(mv_OER_data)
 
-saveRDS(media_usage, file = "./data_pieces/WP_FB_News.RDS")
-rm(web_pageviews, media_usage, media_sites)
-
-WP_FB_News <- readRDS(file = "./data_pieces/WP_FB_News.RDS")
-WV_FB_News <- readRDS(file = "./data_pieces/WV_FB_News.RDS")
-MV_FB_News <- readRDS(file = "./data_pieces/MV_FB_News.RDS")
-
-wv_names_sm <- names(WV_FB_News)
-wp_names_sm <- names(WP_FB_News)
-mv_names_sm <- names(MV_FB_News)
-
-wv_names_sm <- paste0('wv_', wv_names_sm)
 wp_names_sm <- paste0('wp_', wp_names_sm)
 mv_names_sm <- paste0('mv_', mv_names_sm)
 
-WV_FB_News <- set_names(WV_FB_News, nm = wv_names_sm)
-WP_FB_News <- set_names(WP_FB_News, nm = wp_names_sm)
-MV_FB_News <- set_names(MV_FB_News, nm = mv_names_sm)
+wp_OER_data <- set_names(wp_OER_data, nm = wp_names_sm)
+mv_OER_data <- set_names(mv_OER_data, nm = mv_names_sm)
 
-WV_FB_News <- rename(WV_FB_News, panelist_id = wv_panelist_id)
-WP_FB_News <- rename(WP_FB_News, panelist_id = wp_panelist_id)
-MV_FB_News <- rename(MV_FB_News, panelist_id = mv_panelist_id)
+wp_OER_data <- rename(wp_OER_data, panelist_id = wp_panelist_id)
+mv_OER_data <- rename(mv_OER_data, panelist_id = mv_panelist_id)
 
-rm(mv_names_sm, wp_names_sm, wv_names_sm)
+rm(mv_names_sm, wp_names_sm)
 
-news_media <- merge(MV_FB_News, WP_FB_News, by="panelist_id", all = TRUE)
-news_media <- merge(news_media, WV_FB_News, by="panelist_id", all = TRUE)
-rm(MV_FB_News, WP_FB_News, WV_FB_News)
+oeff_recht <- merge(mv_OER_data, wp_OER_data, by="panelist_id", all = TRUE)
+rm(mv_OER_data, wp_OER_data)
 
-saveRDS(news_media, file = "./data/news_media_final.RDS")
+oeff_recht[is.na(oeff_recht)] <- 0
+
+saveRDS(oeff_recht, file = "./data/OER_final.RDS")
