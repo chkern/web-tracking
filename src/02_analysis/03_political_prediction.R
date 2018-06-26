@@ -304,7 +304,7 @@ confusionMatrix(xgb_v1)
 
 # Voted - background + track_general
 
-model_v2 <- paste(model_v1,paste(track_general,collapse="+"))
+model_v2 <- paste(model_v1,paste("+"),paste(track_general,collapse="+"))
 
 set.seed(300193)
 eval(parse(text=paste("xgb_v2 <- train(",model_v2,",
@@ -321,7 +321,7 @@ confusionMatrix(xgb_v2)
 
 # Voted - background + track_fb_news
 
-model_v3 <- paste(model_v1,paste(track_fb_news,collapse="+"))
+model_v3 <- paste(model_v1,paste("+"),paste(track_fb_news,collapse="+"))
 
 set.seed(300193)
 eval(parse(text=paste("xgb_v3 <- train(",model_v3,",
@@ -338,7 +338,7 @@ confusionMatrix(xgb_v3)
 
 # Voted - background + track_apps
 
-model_v4 <- paste(model_v1,paste(track_apps,collapse="+"))
+model_v4 <- paste(model_v1,paste("+"),paste(track_apps,collapse="+"))
 
 set.seed(300193)
 eval(parse(text=paste("xgb_v4 <- train(",model_v4,",
@@ -355,7 +355,7 @@ confusionMatrix(xgb_v4)
 
 # Voted - background + track_oeff_fake
 
-model_v5 <- paste(model_v1,paste(track_oeff_fake,collapse="+"))
+model_v5 <- paste(model_v1,paste("+"),paste(track_oeff_fake,collapse="+"))
 
 set.seed(300193)
 eval(parse(text=paste("xgb_v5 <- train(",model_v5,",
@@ -373,9 +373,9 @@ confusionMatrix(xgb_v5)
 # Voted - only tracking data
 
 model_v6 <- paste("voted ~",paste(track_general,collapse="+"))
-model_v6 <- paste(model_v6,paste(track_fb_news,collapse="+"))
-model_v6 <- paste(model_v6,paste(track_apps,collapse="+"))
-model_v6 <- paste(model_v6,paste(track_oeff_fake,collapse="+"))
+model_v6 <- paste(model_v6,paste("+"),paste(track_fb_news,collapse="+"))
+model_v6 <- paste(model_v6,paste("+"),paste(track_apps,collapse="+"))
+model_v6 <- paste(model_v6,paste("+"),paste(track_oeff_fake,collapse="+"))
 
 set.seed(300193)
 eval(parse(text=paste("xgb_v6 <- train(",model_v6,",
@@ -409,7 +409,7 @@ confusionMatrix(xgb_a1)
 
 # AFD - background + track_oeff_fake
 
-model_a5 <- paste(model_a1,paste(track_oeff_fake,collapse="+"))
+model_a5 <- paste(model_a1,paste("+"),paste(track_oeff_fake,collapse="+"))
 
 set.seed(300193)
 eval(parse(text=paste("xgb_a5 <- train(",model_a5,",
@@ -427,9 +427,9 @@ confusionMatrix(xgb_a5)
 # AFD - only tracking data
 
 model_a6 <- paste("AFD ~",paste(track_general,collapse="+"))
-model_a6 <- paste(model_a6,paste(track_fb_news,collapse="+"))
-model_a6 <- paste(model_a6,paste(track_apps,collapse="+"))
-model_a6 <- paste(model_a6,paste(track_oeff_fake,collapse="+"))
+model_a6 <- paste(model_a6,paste("+"),paste(track_fb_news,collapse="+"))
+model_a6 <- paste(model_a6,paste("+"),paste(track_apps,collapse="+"))
+model_a6 <- paste(model_a6,paste("+"),paste(track_oeff_fake,collapse="+"))
 
 set.seed(300193)
 eval(parse(text=paste("xgb_a6 <- train(",model_a6,",
@@ -463,7 +463,7 @@ confusionMatrix(xgb_l1)
 
 # left_socdem - background + track_oeff_fake
 
-model_l5 <- paste(model_l1,paste(track_oeff_fake,collapse="+"))
+model_l5 <- paste(model_l1,paste("+"),paste(track_oeff_fake,collapse="+"))
 
 set.seed(300193)
 eval(parse(text=paste("xgb_l5 <- train(",model_l5,",
@@ -481,9 +481,9 @@ confusionMatrix(xgb_l5)
 # left_socdem - only tracking data
 
 model_l6 <- paste("left_socdem ~",paste(track_general,collapse="+"))
-model_l6 <- paste(model_l6,paste(track_fb_news,collapse="+"))
-model_l6 <- paste(model_l6,paste(track_apps,collapse="+"))
-model_l6 <- paste(model_l6,paste(track_oeff_fake,collapse="+"))
+model_l6 <- paste(model_l6,paste("+"),paste(track_fb_news,collapse="+"))
+model_l6 <- paste(model_l6,paste("+"),paste(track_apps,collapse="+"))
+model_l6 <- paste(model_l6,paste("+"),paste(track_oeff_fake,collapse="+"))
 
 set.seed(300193)
 eval(parse(text=paste("xgb_l6 <- train(",model_l6,",
@@ -517,7 +517,7 @@ confusionMatrix(xgb_p1)
 
 # Party affiliation - background + track_oeff_fake
 
-model_p5 <- paste(model_p1,paste(track_oeff_fake,collapse="+"))
+model_p5 <- paste(model_p1,paste("+"),paste(track_oeff_fake,collapse="+"))
 
 set.seed(300193)
 eval(parse(text=paste("xgb_p5 <- train(",model_p5,",
@@ -535,9 +535,9 @@ confusionMatrix(xgb_p5)
 # Party affiliation - only tracking data
 
 model_p6 <- paste("party_affiliation ~",paste(track_general,collapse="+"))
-model_p6 <- paste(model_p6,paste(track_fb_news,collapse="+"))
-model_p6 <- paste(model_p6,paste(track_apps,collapse="+"))
-model_p6 <- paste(model_p6,paste(track_oeff_fake,collapse="+"))
+model_p6 <- paste(model_p6,paste("+"),paste(track_fb_news,collapse="+"))
+model_p6 <- paste(model_p6,paste("+"),paste(track_apps,collapse="+"))
+model_p6 <- paste(model_p6,paste("+"),paste(track_oeff_fake,collapse="+"))
 
 set.seed(300193)
 eval(parse(text=paste("xgb_p6 <- train(",model_p6,",
