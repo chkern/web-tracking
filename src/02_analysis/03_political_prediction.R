@@ -25,10 +25,14 @@ back <- droplevels(back)
 rm(background)
 
 # load the tracking data (small)
-tracking <- readRDS(file = ".\\data\\data_prep_final_small.rds")
+tracking_small <- readRDS(file = ".\\data\\data_prep_final_small.rds")
+
+# load the tracking data (full)
+tracking <- readRDS(file = ".\\data\\data_prep_final.rds")
+tracking <- tracking[,c(1,189:ncol(tracking))]
 
 # load the wave 3 survey data
-survey_w3 <- read_dta(file = ".\\survey_daten\\survey_data_w3.dta")
+survey_w3 <- read_dta(file = "survey_data_w3.dta")
 survey_w3$panelist_id <- as.character(survey_w3$panelist_id)
 
 survey_w3$sinus_mil <- NULL
@@ -74,9 +78,9 @@ table(back$nationality)
 back <- back[ , -which(names(back) %in% zero_var_back)]
 rm(zero_var_back)
 
-#zero_var_track <- nearZeroVar(X_back_track, freqCut = 99.9/0.1, names = TRUE, allowParallel = T)
-#X_back_track <- X_back_track[ , -which(names(X_back_track) %in% zero_var_track)]
-#rm(zero_var_track)
+zero_var_track <- nearZeroVar(tracking, freqCut = 99.95/0.05, names = TRUE, allowParallel = T)
+tracking <- tracking[ , -which(names(tracking) %in% zero_var_track)]
+rm(zero_var_track)
 
 # Some variables in the background data have weird "labelled" class
 # correctly assign labelled class to factor class
@@ -102,7 +106,8 @@ back[,c("net_inc", "hh_inc", "accom_type", "legal_status", "edu_school", "edu_vo
 
 # put datasets together
 
-X_back_track <- merge(tracking, back, by="panelist_id")
+X_back_track <- merge(tracking_small, back, by="panelist_id")
+X_back_track <- merge(X_back_track, tracking, by="panelist_id")
 
 summary(is.na(X_back_track))
 X_back_track[is.na(X_back_track)] <- 0
@@ -114,6 +119,10 @@ track_general <- names(X_back_track[2:164])
 track_fb_news <- names(X_back_track[c(165:176,341:376)])
 track_apps <- names(X_back_track[181:340])
 track_oeff_fake <- names(X_back_track[377:407])
+
+names(X_back_track)[439:ncol(X_back_track)] <- gsub("[^a-zA-Z0-9]", "", names(X_back_track)[439:ncol(X_back_track)])
+X_back_track <- X_back_track[, !duplicated(colnames(X_back_track))]
+track_domains <- names(X_back_track[439:ncol(X_back_track)])
 
 # Attach Ys to X variables
 Y <- survey_w3[,c(1,365:368)]
@@ -180,10 +189,10 @@ ctrl1  <- trainControl(method = "cv",
                        verboseIter = TRUE)
 
 ctrl2  <- trainControl(method = "cv",
-                      number = 10,
-                      summaryFunction = multiClassSummary,
-                      classProbs = TRUE,
-                      verboseIter = TRUE)
+                       number = 10,
+                       summaryFunction = multiClassSummary,
+                       classProbs = TRUE,
+                       verboseIter = TRUE)
 
 ##################################################################################
 # Models - Trees
@@ -193,39 +202,73 @@ ctrl2  <- trainControl(method = "cv",
 
 X_back_track_train_c <- X_back_track_train[!is.na(X_back_track_train$voted),]
 
-model_a1 <- paste("voted ~",paste(track_fb_news,collapse="+"))
+model_v1 <- paste("voted ~",paste(track_fb_news,collapse="+"))
 
 set.seed(543856)
-eval(parse(text=paste("tree_a1 <- rpart(",model_a1,",
+eval(parse(text=paste("tree_v1 <- rpart(",model_v1,",
                 data = X_back_track_train_c,
                 control = rpart.control(minsplit = 10,
                                        minbucket = 3,
                                        cp = 0.001,
                                        maxdepth = 4))")))
 
-printcp(tree_a1)
-party_tree_a1 <- as.party(tree_a1)
-plot(party_tree_a1, gp = gpar(fontsize = 8.5))
+printcp(tree_v1)
+party_tree_v1 <- as.party(tree_v1)
+plot(party_tree_v1, gp = gpar(fontsize = 8.5))
 
 # Voted - track_apps
 
-model_a2 <- paste("voted ~",paste(track_apps,collapse="+"))
+model_v2 <- paste("voted ~",paste(track_apps,collapse="+"))
 
 set.seed(543856)
-eval(parse(text=paste("tree_a2 <- rpart(",model_a2,",
+eval(parse(text=paste("tree_v2 <- rpart(",model_v2,",
                 data = X_back_track_train_c,
                 control = rpart.control(minsplit = 10,
                                        minbucket = 3,
                                        cp = 0.001,
                                        maxdepth = 4))")))
 
-printcp(tree_a2)
-party_tree_a2 <- as.party(tree_a2)
-plot(party_tree_a2, gp = gpar(fontsize = 8.5))
+printcp(tree_v2)
+party_tree_v2 <- as.party(tree_v2)
+plot(party_tree_v2, gp = gpar(fontsize = 8.5))
 
 # Voted - track_oeff_fake
 
-model_a3 <- paste("voted ~",paste(track_oeff_fake,collapse="+"))
+model_v3 <- paste("voted ~",paste(track_oeff_fake,collapse="+"))
+
+set.seed(543856)
+eval(parse(text=paste("tree_v3 <- rpart(",model_v3,",
+                data = X_back_track_train_c,
+                control = rpart.control(minsplit = 10,
+                                       minbucket = 3,
+                                       cp = 0.001,
+                                       maxdepth = 4))")))
+
+printcp(tree_v3)
+party_tree_v3 <- as.party(tree_v3)
+plot(party_tree_v3, gp = gpar(fontsize = 8.5))
+
+# Voted - track_domains
+
+model_v4 <- paste("voted ~",paste(track_domains,collapse="+"))
+
+set.seed(543856)
+eval(parse(text=paste("tree_v4 <- rpart(",model_v4,",
+                data = X_back_track_train_c,
+                control = rpart.control(minsplit = 10,
+                                       minbucket = 3,
+                                       cp = 0.001,
+                                       maxdepth = 4))")))
+
+printcp(tree_v4)
+party_tree_v4 <- as.party(tree_v4)
+plot(party_tree_v4, gp = gpar(fontsize = 8.5))
+
+# AFD - track_oeff_fake
+
+X_back_track_train_c <- X_back_track_train[!is.na(X_back_track_train$AFD),]
+
+model_a3 <- paste("AFD ~",paste(track_oeff_fake,collapse="+"))
 
 set.seed(543856)
 eval(parse(text=paste("tree_a3 <- rpart(",model_a3,",
@@ -239,39 +282,53 @@ printcp(tree_a3)
 party_tree_a3 <- as.party(tree_a3)
 plot(party_tree_a3, gp = gpar(fontsize = 8.5))
 
-# AFD - track_oeff_fake
+# AFD - track_domains
 
-X_back_track_train_c <- X_back_track_train[!is.na(X_back_track_train$AFD),]
-
-model_b3 <- paste("AFD ~",paste(track_oeff_fake,collapse="+"))
+model_a4 <- paste("AFD ~",paste(track_domains,collapse="+"))
 
 set.seed(543856)
-eval(parse(text=paste("tree_b3 <- rpart(",model_b3,",
+eval(parse(text=paste("tree_a4 <- rpart(",model_a4,",
                 data = X_back_track_train_c,
                 control = rpart.control(minsplit = 10,
                                        minbucket = 3,
                                        cp = 0.001,
                                        maxdepth = 4))")))
 
-printcp(tree_b3)
-party_tree_b3 <- as.party(tree_b3)
-plot(party_tree_b3, gp = gpar(fontsize = 8.5))
+printcp(tree_a4)
+party_tree_a4 <- as.party(tree_a4)
+plot(party_tree_a4, gp = gpar(fontsize = 8.5))
 
 # left_socdem - track_oeff_fake
 
-model_c3 <- paste("left_socdem ~",paste(track_oeff_fake,collapse="+"))
+model_l3 <- paste("left_socdem ~",paste(track_oeff_fake,collapse="+"))
 
 set.seed(543856)
-eval(parse(text=paste("tree_c3 <- rpart(",model_c3,",
+eval(parse(text=paste("tree_l3 <- rpart(",model_l3,",
                 data = X_back_track_train_c,
                 control = rpart.control(minsplit = 10,
                                        minbucket = 3,
                                        cp = 0.001,
                                        maxdepth = 4))")))
 
-printcp(tree_c3)
-party_tree_c3 <- as.party(tree_c3)
-plot(party_tree_c3, gp = gpar(fontsize = 8.5))
+printcp(tree_l3)
+party_tree_l3 <- as.party(tree_l3)
+plot(party_tree_l3, gp = gpar(fontsize = 8.5))
+
+# left_socdem - track_domains
+
+model_l4 <- paste("left_socdem ~",paste(track_domains,collapse="+"))
+
+set.seed(543856)
+eval(parse(text=paste("tree_l4 <- rpart(",model_l4,",
+                data = X_back_track_train_c,
+                control = rpart.control(minsplit = 10,
+                                       minbucket = 3,
+                                       cp = 0.001,
+                                       maxdepth = 4))")))
+
+printcp(tree_l4)
+party_tree_l4 <- as.party(tree_l4)
+plot(party_tree_l4, gp = gpar(fontsize = 8.5))
 
 ##################################################################################
 # Models - XGBoost
@@ -376,6 +433,7 @@ model_v6 <- paste("voted ~",paste(track_general,collapse="+"))
 model_v6 <- paste(model_v6,paste("+"),paste(track_fb_news,collapse="+"))
 model_v6 <- paste(model_v6,paste("+"),paste(track_apps,collapse="+"))
 model_v6 <- paste(model_v6,paste("+"),paste(track_oeff_fake,collapse="+"))
+model_v6 <- paste(model_v6,paste("+"),paste(track_domains,collapse="+"))
 
 set.seed(300193)
 eval(parse(text=paste("xgb_v6 <- train(",model_v6,",
@@ -430,6 +488,7 @@ model_a6 <- paste("AFD ~",paste(track_general,collapse="+"))
 model_a6 <- paste(model_a6,paste("+"),paste(track_fb_news,collapse="+"))
 model_a6 <- paste(model_a6,paste("+"),paste(track_apps,collapse="+"))
 model_a6 <- paste(model_a6,paste("+"),paste(track_oeff_fake,collapse="+"))
+model_a6 <- paste(model_a6,paste("+"),paste(track_domains,collapse="+"))
 
 set.seed(300193)
 eval(parse(text=paste("xgb_a6 <- train(",model_a6,",
@@ -484,6 +543,7 @@ model_l6 <- paste("left_socdem ~",paste(track_general,collapse="+"))
 model_l6 <- paste(model_l6,paste("+"),paste(track_fb_news,collapse="+"))
 model_l6 <- paste(model_l6,paste("+"),paste(track_apps,collapse="+"))
 model_l6 <- paste(model_l6,paste("+"),paste(track_oeff_fake,collapse="+"))
+model_l6 <- paste(model_l6,paste("+"),paste(track_domains,collapse="+"))
 
 set.seed(300193)
 eval(parse(text=paste("xgb_l6 <- train(",model_l6,",
@@ -538,6 +598,7 @@ model_p6 <- paste("party_affiliation ~",paste(track_general,collapse="+"))
 model_p6 <- paste(model_p6,paste("+"),paste(track_fb_news,collapse="+"))
 model_p6 <- paste(model_p6,paste("+"),paste(track_apps,collapse="+"))
 model_p6 <- paste(model_p6,paste("+"),paste(track_oeff_fake,collapse="+"))
+model_p6 <- paste(model_p6,paste("+"),paste(track_domains,collapse="+"))
 
 set.seed(300193)
 eval(parse(text=paste("xgb_p6 <- train(",model_p6,",
