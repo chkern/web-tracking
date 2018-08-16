@@ -378,6 +378,7 @@ eval(parse(text=paste("xgb_v1 <- train(",model_v1,",
 xgb_v1
 plot(xgb_v1)
 confusionMatrix(xgb_v1)
+plot(varImp(xgb_v1), top = 10)
 
 # Voted - background + track_general
 
@@ -395,6 +396,7 @@ eval(parse(text=paste("xgb_v2 <- train(",model_v2,",
 xgb_v2
 plot(xgb_v2)
 confusionMatrix(xgb_v2)
+plot(varImp(xgb_v2), top = 10)
 
 # Voted - background + track_fb_news
 
@@ -412,6 +414,7 @@ eval(parse(text=paste("xgb_v3 <- train(",model_v3,",
 xgb_v3
 plot(xgb_v3)
 confusionMatrix(xgb_v3)
+plot(varImp(xgb_v3), top = 10)
 
 # Voted - background + track_apps
 
@@ -429,6 +432,7 @@ eval(parse(text=paste("xgb_v4 <- train(",model_v4,",
 xgb_v4
 plot(xgb_v4)
 confusionMatrix(xgb_v4)
+plot(varImp(xgb_v4), top = 10)
 
 # Voted - background + track_oeff_fake
 
@@ -446,6 +450,7 @@ eval(parse(text=paste("xgb_v5 <- train(",model_v5,",
 xgb_v5
 plot(xgb_v5)
 confusionMatrix(xgb_v5)
+plot(varImp(xgb_v5), top = 10)
 
 # Voted - only tracking data
 
@@ -467,6 +472,25 @@ eval(parse(text=paste("xgb_v6 <- train(",model_v6,",
 xgb_v6
 plot(xgb_v6)
 confusionMatrix(xgb_v6)
+plot(varImp(xgb_v6), top = 10)
+
+# Voted - tracking full + background
+
+model_v7 <- paste(model_v6,paste("+"),paste(background,collapse="+"))
+
+set.seed(303493)
+eval(parse(text=paste("xgb_v7 <- train(",model_v7,",
+                data = X_back_track_train,
+                method = 'xgbTree',
+                trControl = ctrl1,
+                tuneGrid = grid,
+                metric = 'ROC',
+                na.action = na.omit)")))
+
+xgb_v7
+plot(xgb_v7)
+confusionMatrix(xgb_v7)
+plot(varImp(xgb_v7), top = 10)
 
 # AFD - background
 
@@ -484,6 +508,7 @@ eval(parse(text=paste("xgb_a1 <- train(",model_a1,",
 xgb_a1
 plot(xgb_a1)
 confusionMatrix(xgb_a1)
+plot(varImp(xgb_a1), top = 10)
 
 # AFD - background + track_general
 
@@ -501,6 +526,7 @@ eval(parse(text=paste("xgb_a2 <- train(",model_a2,",
 xgb_a2
 plot(xgb_va)
 confusionMatrix(xgb_a2)
+plot(varImp(xgb_a2), top = 10)
 
 # AFD - background + track_fb_news
 
@@ -518,6 +544,7 @@ eval(parse(text=paste("xgb_a3 <- train(",model_a3,",
 xgb_a3
 plot(xgb_a3)
 confusionMatrix(xgb_a3)
+plot(varImp(xgb_a3), top = 10)
 
 # AFD - background + track_apps
 
@@ -535,6 +562,7 @@ eval(parse(text=paste("xgb_a4 <- train(",model_a4,",
 xgb_a4
 plot(xgb_a4)
 confusionMatrix(xgb_a4)
+plot(varImp(xgb_a4), top = 10)
 
 # AFD - background + track_oeff_fake
 
@@ -552,6 +580,7 @@ eval(parse(text=paste("xgb_a5 <- train(",model_a5,",
 xgb_a5
 plot(xgb_a5)
 confusionMatrix(xgb_a5)
+plot(varImp(xgb_a5), top = 10)
 
 # AFD - only tracking data
 
@@ -573,6 +602,25 @@ eval(parse(text=paste("xgb_a6 <- train(",model_a6,",
 xgb_a6
 plot(xgb_a6)
 confusionMatrix(xgb_a6)
+plot(varImp(xgb_a6), top = 10)
+
+# AFD - tracking full + background
+
+model_a7 <- paste(model_a6,paste("+"),paste(background,collapse="+"))
+
+set.seed(303493)
+eval(parse(text=paste("xgb_a7 <- train(",model_a7,",
+                data = X_back_track_train,
+                method = 'xgbTree',
+                trControl = ctrl1,
+                tuneGrid = grid,
+                metric = 'ROC',
+                na.action = na.omit)")))
+
+xgb_a7
+plot(xgb_a7)
+confusionMatrix(xgb_a7)
+plot(varImp(xgb_a7), top = 10)
 
 # LEFT - background
 
@@ -590,6 +638,7 @@ eval(parse(text=paste("xgb_l1 <- train(",model_l1,",
 xgb_l1
 plot(xgb_l1)
 confusionMatrix(xgb_l1)
+plot(varImp(xgb_l1), top = 10)
 
 # LEFT - background + track_general
 
@@ -607,6 +656,7 @@ eval(parse(text=paste("xgb_l2 <- train(",model_l2,",
 xgb_l2
 plot(xgb_l2)
 confusionMatrix(xgb_l2)
+plot(varImp(xgb_l2), top = 10)
 
 # LEFT - background + track_fb_news
 
@@ -624,6 +674,7 @@ eval(parse(text=paste("xgb_l3 <- train(",model_l3,",
 xgb_l3
 plot(xgb_l3)
 confusionMatrix(xgb_l3)
+plot(varImp(xgb_l3), top = 10)
 
 # LEFT - background + track_apps
 
@@ -641,6 +692,7 @@ eval(parse(text=paste("xgb_l4 <- train(",model_l4,",
 xgb_l4
 plot(xgb_l4)
 confusionMatrix(xgb_l4)
+plot(varImp(xgb_l4), top = 10)
 
 # LEFT - background + track_oeff_fake
 
@@ -658,6 +710,7 @@ eval(parse(text=paste("xgb_l5 <- train(",model_l5,",
 xgb_l5
 plot(xgb_l5)
 confusionMatrix(xgb_l5)
+plot(varImp(xgb_l5), top = 10)
 
 # LEFT - only tracking data
 
@@ -679,6 +732,25 @@ eval(parse(text=paste("xgb_l6 <- train(",model_l6,",
 xgb_l6
 plot(xgb_l6)
 confusionMatrix(xgb_l6)
+plot(varImp(xgb_l6), top = 10)
+
+# LEFT - tracking full + background
+
+model_l7 <- paste(model_l6,paste("+"),paste(background,collapse="+"))
+
+set.seed(303493)
+eval(parse(text=paste("xgb_l7 <- train(",model_l7,",
+                data = X_back_track_train,
+                method = 'xgbTree',
+                trControl = ctrl1,
+                tuneGrid = grid,
+                metric = 'ROC',
+                na.action = na.omit)")))
+
+xgb_l7
+plot(xgb_l7)
+confusionMatrix(xgb_l7)
+plot(varImp(xgb_l7), top = 10)
 
 # Party affiliation - background data
 
@@ -696,6 +768,7 @@ eval(parse(text=paste("xgb_p1 <- train(",model_p1,",
 xgb_p1
 plot(xgb_p1)
 confusionMatrix(xgb_p1)
+plot(varImp(xgb_p1), top = 10)
 
 # Party affiliation - background + track_oeff_fake
 
@@ -713,6 +786,7 @@ eval(parse(text=paste("xgb_p5 <- train(",model_p5,",
 xgb_p5
 plot(xgb_p5)
 confusionMatrix(xgb_p5)
+plot(varImp(xgb_p5), top = 10)
 
 # Party affiliation - only tracking data
 
@@ -734,6 +808,25 @@ eval(parse(text=paste("xgb_p6 <- train(",model_p6,",
 xgb_p6
 plot(xgb_p6)
 confusionMatrix(xgb_p6)
+plot(varImp(xgb_p6), top = 10)
+
+# Party affiliation - tracking full + background
+
+model_p7 <- paste(model_p6,paste("+"),paste(background,collapse="+"))
+
+set.seed(303493)
+eval(parse(text=paste("xgb_p7 <- train(",model_p7,",
+                data = X_back_track_train,
+                method = 'xgbTree',
+                trControl = ctrl1,
+                tuneGrid = grid,
+                metric = 'ROC',
+                na.action = na.omit)")))
+
+xgb_p7
+plot(xgb_p7)
+confusionMatrix(xgb_p7)
+plot(varImp(xgb_p7), top = 10)
 
 ##################################################################################
 # Compare CV performance
@@ -744,7 +837,8 @@ resamps1 <- resamples(list(XGBoost1 = xgb_v1,
                            XGBoost3 = xgb_v3,
                            XGBoost4 = xgb_v4,
                            XGBoost5 = xgb_v5,
-                           XGBoost6 = xgb_v6))
+                           XGBoost6 = xgb_v6,
+                           XGBoost7 = xgb_v7))
 
 summary(resamps1)
 bwplot(resamps1, metric = "ROC", xlim = c(0,1))
@@ -754,7 +848,8 @@ resamps2 <- resamples(list(XGBoost1 = xgb_a1,
                            XGBoost3 = xgb_a3,
                            XGBoost4 = xgb_a4,
                            XGBoost5 = xgb_a5,
-                           XGBoost6 = xgb_a6))
+                           XGBoost6 = xgb_a6,
+                           XGBoost7 = xgb_a7))
 
 summary(resamps2)
 bwplot(resamps2, metric = "ROC", xlim = c(0,1))
@@ -764,14 +859,16 @@ resamps3 <- resamples(list(XGBoost1 = xgb_l1,
                            XGBoost3 = xgb_l3,
                            XGBoost4 = xgb_l4,
                            XGBoost5 = xgb_l5,
-                           XGBoost6 = xgb_l6))
+                           XGBoost6 = xgb_l6,
+                           XGBoost7 = xgb_l7))
 
 summary(resamps3)
 bwplot(resamps3, metric = "ROC", xlim = c(0,1))
 
 resamps4 <- resamples(list(XGBoost1 = xgb_p1,
                            XGBoost5 = xgb_p5,
-                           XGBoost6 = xgb_p6))
+                           XGBoost6 = xgb_p6,
+                           XGBoost7 = xgb_p7))
 
 summary(resamps4)
 bwplot(resamps4, metric = c("AUC", "prAUC"), xlim = c(0,1))
@@ -787,6 +884,7 @@ p_xgb_v3 <- predict(xgb_v3, newdata = X_back_track_test_v, type = "prob")
 p_xgb_v4 <- predict(xgb_v4, newdata = X_back_track_test_v, type = "prob")
 p_xgb_v5 <- predict(xgb_v5, newdata = X_back_track_test_v, type = "prob")
 p_xgb_v6 <- predict(xgb_v6, newdata = X_back_track_test_v, type = "prob")
+p_xgb_v7 <- predict(xgb_v7, newdata = X_back_track_test_v, type = "prob")
 
 X_back_track_test_a <- X_back_track_test[!is.na(X_back_track_test$AFD),]
 p_xgb_a1 <- predict(xgb_a1, newdata = X_back_track_test_a, type = "prob")
@@ -795,6 +893,7 @@ p_xgb_a3 <- predict(xgb_a3, newdata = X_back_track_test_a, type = "prob")
 p_xgb_a4 <- predict(xgb_a4, newdata = X_back_track_test_a, type = "prob")
 p_xgb_a5 <- predict(xgb_a5, newdata = X_back_track_test_a, type = "prob")
 p_xgb_a6 <- predict(xgb_a6, newdata = X_back_track_test_a, type = "prob")
+p_xgb_a7 <- predict(xgb_a7, newdata = X_back_track_test_a, type = "prob")
 
 X_back_track_test_l <- X_back_track_test[!is.na(X_back_track_test$LEFT),]
 p_xgb_l1 <- predict(xgb_l1, newdata = X_back_track_test_l, type = "prob")
@@ -803,11 +902,13 @@ p_xgb_l3 <- predict(xgb_l3, newdata = X_back_track_test_l, type = "prob")
 p_xgb_l4 <- predict(xgb_l4, newdata = X_back_track_test_l, type = "prob")
 p_xgb_l5 <- predict(xgb_l5, newdata = X_back_track_test_l, type = "prob")
 p_xgb_l6 <- predict(xgb_l6, newdata = X_back_track_test_l, type = "prob")
+p_xgb_l7 <- predict(xgb_l7, newdata = X_back_track_test_l, type = "prob")
 
 X_back_track_test_l <- X_back_track_test[!is.na(X_back_track_test$party_affiliation),]
 c_xgb_p1 <- predict(xgb_p1, newdata = X_back_track_test_p)
 c_xgb_p5 <- predict(xgb_p5, newdata = X_back_track_test_p)
 c_xgb_p6 <- predict(xgb_p6, newdata = X_back_track_test_p)
+p_xgb_p7 <- predict(xgb_p7, newdata = X_back_track_test_p)
 
 # ROC curves - voted
 
@@ -823,6 +924,8 @@ pos_v5 <- p_xgb_v5$voted[X_back_track_test_v$voted == "voted"]
 neg_v5 <- p_xgb_v5$voted[X_back_track_test_v$voted == "not_voted"]
 pos_v6 <- p_xgb_v6$voted[X_back_track_test_v$voted == "voted"]
 neg_v6 <- p_xgb_v6$voted[X_back_track_test_v$voted == "not_voted"]
+pos_v7 <- p_xgb_v7$voted[X_back_track_test_v$voted == "voted"]
+neg_v7 <- p_xgb_v7$voted[X_back_track_test_v$voted == "not_voted"]
 
 roc_v1 <- roc.curve(pos_v1, neg_v1, curve = T)
 roc_v2 <- roc.curve(pos_v2, neg_v2, curve = T)
@@ -830,6 +933,7 @@ roc_v3 <- roc.curve(pos_v3, neg_v3, curve = T)
 roc_v4 <- roc.curve(pos_v4, neg_v4, curve = T)
 roc_v5 <- roc.curve(pos_v5, neg_v5, curve = T)
 roc_v6 <- roc.curve(pos_v6, neg_v6, curve = T)
+roc_v7 <- roc.curve(pos_v7, neg_v7, curve = T)
 
 ggplot() + 
   geom_line(data=data.frame(roc_v1$curve), aes(x=X1,y=X2,color="black")) +
@@ -838,10 +942,11 @@ ggplot() +
   geom_line(data=data.frame(roc_v4$curve), aes(x=X1,y=X2,color="orange")) +
   geom_line(data=data.frame(roc_v5$curve), aes(x=X1,y=X2,color="red")) +
   geom_line(data=data.frame(roc_v6$curve), aes(x=X1,y=X2,color="blue")) +
+  geom_line(data=data.frame(roc_v7$curve), aes(x=X1,y=X2,color="darkviolet")) +
   labs(x = "1 - Specificity",y = "Sensitivity") +
-  scale_colour_manual(name = "", values = c("black" = "black", "grey50" = "grey50", "forestgreen" = "forestgreen", "orange" =  "orange", "red" = "red", "blue" = "blue"),
-                      breaks = c("black", "grey50", "forestgreen", "orange", "red", "blue"),
-                      labels = c("black" = "xgb_v1", "grey50" = "xgb_v2", "forestgreen" = "xgb_v3", "orange" = "xgb_v4", "red" = "xgb_v5", "blue" = "xgb_v6"))
+  scale_colour_manual(name = "", values = c("black" = "black", "grey50" = "grey50", "forestgreen" = "forestgreen", "orange" =  "orange", "red" = "red", "blue" = "blue", "darkviolet" = "darkviolet"),
+                      breaks = c("black", "grey50", "forestgreen", "orange", "red", "blue", "darkviolet"),
+                      labels = c("black" = "xgb_v1", "grey50" = "xgb_v2", "forestgreen" = "xgb_v3", "orange" = "xgb_v4", "red" = "xgb_v5", "blue" = "xgb_v6", "darkviolet" = "xgb_v7"))
 
 # ROC curves - AFD
 
@@ -857,6 +962,8 @@ pos_a5 <- p_xgb_a5$AFD[X_back_track_test_a$AFD == "AFD"]
 neg_a5 <- p_xgb_a5$AFD[X_back_track_test_a$AFD == "not_AFD"]
 pos_a6 <- p_xgb_a6$AFD[X_back_track_test_a$AFD == "AFD"]
 neg_a6 <- p_xgb_a6$AFD[X_back_track_test_a$AFD == "not_AFD"]
+pos_a7 <- p_xgb_a7$AFD[X_back_track_test_a$AFD == "AFD"]
+neg_a7 <- p_xgb_a7$AFD[X_back_track_test_a$AFD == "not_AFD"]
 
 roc_a1 <- roc.curve(pos_a1, neg_a1, curve = T)
 roc_a2 <- roc.curve(pos_a2, neg_a2, curve = T)
@@ -864,6 +971,7 @@ roc_a3 <- roc.curve(pos_a3, neg_a3, curve = T)
 roc_a4 <- roc.curve(pos_a4, neg_a4, curve = T)
 roc_a5 <- roc.curve(pos_a5, neg_a5, curve = T)
 roc_a6 <- roc.curve(pos_a6, neg_a6, curve = T)
+roc_a7 <- roc.curve(pos_a7, neg_a7, curve = T)
 
 ggplot() + 
   geom_line(data=data.frame(roc_a1$curve), aes(x=X1,y=X2,color="black")) +
@@ -872,10 +980,11 @@ ggplot() +
   geom_line(data=data.frame(roc_a4$curve), aes(x=X1,y=X2,color="orange")) +
   geom_line(data=data.frame(roc_a5$curve), aes(x=X1,y=X2,color="red")) +
   geom_line(data=data.frame(roc_a6$curve), aes(x=X1,y=X2,color="blue")) +
+  geom_line(data=data.frame(roc_a7$curve), aes(x=X1,y=X2,color="darkviolet")) +
   labs(x = "1 - Specificity",y = "Sensitivity") +
-  scale_colour_manual(name = "", values = c("black" = "black", "grey50" = "grey50", "forestgreen" = "forestgreen", "orange" =  "orange", "red" = "red", "blue" = "blue"),
-                      breaks = c("black", "grey50", "forestgreen", "orange", "red", "blue"),
-                      labels = c("black" = "xgb_a1", "grey50" = "xgb_a2", "forestgreen" = "xgb_a3", "orange" = "xgb_a4", "red" = "xgb_a5", "blue" = "xgb_a6"))
+  scale_colour_manual(name = "", values = c("black" = "black", "grey50" = "grey50", "forestgreen" = "forestgreen", "orange" =  "orange", "red" = "red", "blue" = "blue", "darkviolet" = "darkviolet"),
+                      breaks = c("black", "grey50", "forestgreen", "orange", "red", "blue", "darkviolet"),
+                      labels = c("black" = "xgb_a1", "grey50" = "xgb_a2", "forestgreen" = "xgb_a3", "orange" = "xgb_a4", "red" = "xgb_a5", "blue" = "xgb_a6", "darkviolet" = "xgb_a7"))
 
 # ROC curves - LEFT
 
@@ -891,6 +1000,8 @@ pos_l5 <- p_xgb_l5$LEFT[X_back_track_test_l$LEFT == "LEFT"]
 neg_l5 <- p_xgb_l5$LEFT[X_back_track_test_l$LEFT == "not_LEFT"]
 pos_l6 <- p_xgb_l6$LEFT[X_back_track_test_l$LEFT == "LEFT"]
 neg_l6 <- p_xgb_l6$LEFT[X_back_track_test_l$LEFT == "not_LEFT"]
+pos_l7 <- p_xgb_l7$LEFT[X_back_track_test_l$LEFT == "LEFT"]
+neg_l7 <- p_xgb_l7$LEFT[X_back_track_test_l$LEFT == "not_LEFT"]
 
 roc_l1 <- roc.curve(pos_l1, neg_l1, curve = T)
 roc_l2 <- roc.curve(pos_l2, neg_l2, curve = T)
@@ -898,6 +1009,7 @@ roc_l3 <- roc.curve(pos_l3, neg_l3, curve = T)
 roc_l4 <- roc.curve(pos_l4, neg_l4, curve = T)
 roc_l5 <- roc.curve(pos_l5, neg_l5, curve = T)
 roc_l6 <- roc.curve(pos_l6, neg_l6, curve = T)
+roc_l7 <- roc.curve(pos_l7, neg_l7, curve = T)
 
 ggplot() + 
   geom_line(data=data.frame(roc_l1$curve), aes(x=X1,y=X2,color="black")) +
@@ -906,7 +1018,8 @@ ggplot() +
   geom_line(data=data.frame(roc_l4$curve), aes(x=X1,y=X2,color="orange")) +
   geom_line(data=data.frame(roc_l5$curve), aes(x=X1,y=X2,color="red")) +
   geom_line(data=data.frame(roc_l6$curve), aes(x=X1,y=X2,color="blue")) +
+  geom_line(data=data.frame(roc_l7$curve), aes(x=X1,y=X2,color="darkviolet")) +
   labs(x = "1 - Specificity",y = "Sensitivity") +
-  scale_colour_manual(name = "", values = c("black" = "black", "grey50" = "grey50", "forestgreen" = "forestgreen", "orange" =  "orange", "red" = "red", "blue" = "blue"),
-                      breaks = c("black", "grey50", "forestgreen", "orange", "red", "blue"),
-                      labels = c("black" = "xgb_l1", "grey50" = "xgb_l2", "forestgreen" = "xgb_l3", "orange" = "xgb_l4", "red" = "xgb_l5", "blue" = "xgb_l6"))
+  scale_colour_manual(name = "", values = c("black" = "black", "grey50" = "grey50", "forestgreen" = "forestgreen", "orange" =  "orange", "red" = "red", "blue" = "blue", "darkviolet" = "darkviolet"),
+                      breaks = c("black", "grey50", "forestgreen", "orange", "red", "blue", "darkviolet"),
+                      labels = c("black" = "xgb_l1", "grey50" = "xgb_l2", "forestgreen" = "xgb_l3", "orange" = "xgb_l4", "red" = "xgb_l5", "blue" = "xgb_l6", "darkviolet" = "xgb_l7"))
