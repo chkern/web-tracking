@@ -8,6 +8,9 @@ library(data.table)
 library(dummies)
 library(car)
 library(caret)
+library(rpart)
+library(MLmetrics)
+library(e1071)
 library(partykit)
 library(xgboost)
 library(ranger)
@@ -15,10 +18,10 @@ library(gridExtra)
 library(pROC)
 
 # Set path
-setwd("X:\\Respondi\\RESPONDI_w3")
-
+setwd("~/Respondi/RESPONDI_w3")
+# setwd("X:\\Respondi\\RESPONDI_w3")
 # load the socio demographic information and limit to "standard" sociodemographics
-load(".\\background_info\\background.RData")
+load("./background_info/background.RData")
 back <- select(background, panelist_id, m_1000, m_1001, m_1006, md_2806,
                md_0004, md_0006, md_1171, md_1172, md_1174, md_1175, md_1176,
                md_1181, md_1223, md_1264, md_1634, md_1635, md_1660, 
@@ -27,14 +30,14 @@ back <- droplevels(back)
 rm(background)
 
 # load the tracking data (small)
-tracking_small <- readRDS(file = ".\\data\\data_prep_final_small.rds")
+tracking_small <- readRDS(file = "./data/data_prep_final_small.rds")
 
 # load the tracking data (full)
-tracking <- readRDS(file = ".\\data\\data_prep_final.rds")
+tracking <- readRDS(file = "./data/data_prep_final.rds")
 tracking <- tracking[,c(1,189:ncol(tracking))]
 
 # load the wave 3 survey data
-survey_w3 <- read_dta(file = "survey_data_w3.dta")
+survey_w3 <- read_dta(file = "./survey_daten/survey_data_w3.dta")
 
 ##################################################################################
 # Prepare data
