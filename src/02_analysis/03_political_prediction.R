@@ -1105,7 +1105,7 @@ set.seed(303493)
 eval(parse(text=paste("xgb_p7 <- train(",model_p7,",
                 data = X_back_track_train,
                 method = 'xgbTree',
-                trControl = ctrl1,
+                trControl = ctrl2,
                 tuneGrid = xgb_grid,
                 metric = 'ROC',
                 na.action = na.omit)")))
