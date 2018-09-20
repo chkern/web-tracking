@@ -2,9 +2,7 @@
 
 library(plyr)
 library(tidyverse)
-library(foreign)
 library(haven)
-library(data.table)
 library(dummies)
 library(car)
 library(caret)
@@ -535,120 +533,64 @@ plot(varImp(xgb_u5), top = 10)
 plot(varImp(xgb_u6), top = 10)
 plot(varImp(xgb_u7), top = 10)
 
-plot(varImp(rf_u1), top = 10)
-plot(varImp(rf_u2), top = 10)
-plot(varImp(rf_u3), top = 10)
-plot(varImp(rf_u4), top = 10)
-plot(varImp(rf_u5), top = 10)
-plot(varImp(rf_u6), top = 10)
-plot(varImp(rf_u7), top = 10)
-
 imp_xgb_u1 <- varImp(xgb_u1)$importance
-imp_xgb_u1$type <- "XGBoost"
 imp_xgb_u1 <- rownames_to_column(imp_xgb_u1, "varname")
 
-imp_rf_u1 <- varImp(rf_u1)$importance
-imp_rf_u1$type <- "Random Forest"
-imp_rf_u1 <- rownames_to_column(imp_rf_u1, "varname")
+imp_xgb_u1 <-
+  imp_xgb_u1 %>%
+  top_n(5, Overall) %>%
+  mutate(order = 6 - row_number())
 
-imp_u1 <- rbind(imp_xgb_u1, imp_rf_u1)
-
-imp_u1 <-
-  imp_u1 %>%
-  arrange(type, desc(Overall)) %>%
-  group_by(type) %>%
-  top_n(10, Overall) %>%
-  ungroup() %>%
-  mutate(order = row_number()) %>%
-  mutate(rev_order = 21 - order)
-
-p_imp_u1_1 <- 
-  imp_u1 %>%
-  filter(type == "XGBoost") %>%
-  ggplot() +
-  geom_point(aes(x = Overall, y = rev_order)) + 
+ggplot(imp_xgb_u1) +
+  geom_point(aes(x = Overall, y = order)) + 
   labs(x = "", y = "") +
-  facet_grid(. ~ type) +
   xlim(0, 100) +
   scale_y_continuous(
-    breaks = imp_u1$rev_order,
-    labels = imp_u1$varname)
+    breaks = imp_xgb_u1$order,
+    labels = imp_xgb_u1$varname)
 
-ggsave("p_imp_u1_1.png", width = 6, height = 6)
-
-p_imp_u1_2 <- 
-  imp_u1 %>%
-  filter(type == "Random Forest") %>%
-  ggplot() +
-  geom_point(aes(x = Overall, y = rev_order)) + 
-  labs(x = "", y = "") +
-  facet_grid(. ~ type) +
-  xlim(0, 100) +
-  scale_y_continuous(
-    breaks = imp_u1$rev_order,
-    labels = imp_u1$varname)
-
-ggsave("p_imp_u1_2.png", width = 6, height = 6)
+ggsave("p_imp_u1.png", width = 6, height = 6)
 
 ##################################################################################
 # Compare CV performance
 ##################################################################################
 
-resamps1 <- resamples(list(xgb_u1, xgb_u2, xgb_u3, xgb_u4, xgb_u5, xgb_u6, xgb_u7,
-                           rf_u1, rf_u2, rf_u3, rf_u4, rf_u5, rf_u6, rf_u7))
-
+resamps1 <- resamples(list(xgb_u1, xgb_u2, xgb_u3, xgb_u4, xgb_u5, xgb_u6, xgb_u7))
 summary(resamps1)
-bwplot(resamps1, metric = "ROC", xlim = c(0,1))
 
 resamp1 <- 
   reshape(resamps1$values,
           direction = "long",
           varying = 2:ncol(resamps1$values),
           sep = "~",
-          v.names = c("Accuracy","Kappa","ROC","Sens","Spec"),
+          v.names = c("Accuracy", "Kappa", "ROC", "Sens", "Spec"),
           timevar = "model")
 
 resamp1 <- 
   resamp1 %>%
-  mutate(type = ifelse(model > 7, "Random Forest", "XGBoost")) %>%
   mutate(model = factor(model)) %>%
   mutate(model = fct_recode(model,
-                            "Background" = "1",
-                            "Back+General" = "2",
-                            "Back+Fb_news" = "3",
-                            "Back+Apps" = "4",
-                            "Back+Fake" = "5",
-                            "Track_only" = "6",
-                            "Back+Track" = "7",
-                            "Background" = "8",
-                            "Back+General" = "9",
-                            "Back+Fb_news" = "10",
-                            "Back+Apps" = "11",
-                            "Back+Fake" = "12",
-                            "Track_only" = "13",
-                            "Back+Track" = "14"))
+                            "Demo" = "1",
+                            "Demo+Tracking_general" = "2",
+                            "Demo+Tracking_news" = "3",
+                            "Demo+Tracking_apps" = "4",
+                            "Demo+Tracking_fake" = "5",
+                            "Tracking" = "6",
+                            "Demo+Tracking" = "7")) %>%
+  mutate(model = fct_relevel(model, "Tracking", after = 1))
 
-p_resamp_u_1 <- resamp1 %>%
-  filter(type == "XGBoost") %>%
+p_resamp_u <- resamp1 %>%
   ggplot() +
-  geom_boxplot(aes(y = ROC, x = as.factor(model))) +
+  geom_boxplot(aes(y = ROC, x = fct_rev(model), fill = model)) +
   ylim(0, 1) +
   labs(x = "") +
-  coord_flip() +
-  facet_grid(. ~ type)
+  labs(y = "ROC-AUC") +
+  coord_flip() + 
+  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
+  theme(legend.position = "none") +
+  theme(text = element_text(size = 15))
 
-p_resamp_u_2 <- resamp1 %>%
-  filter(type == "Random Forest") %>%
-  ggplot() +
-  geom_boxplot(aes(y = ROC, x = as.factor(model))) +
-  ylim(0, 1) +
-  labs(x = "") +
-  coord_flip() +
-  facet_grid(. ~ type)
-
-p_resamp_u <- grid.arrange(p_resamp_u_1, p_resamp_u_2, ncol = 2)
-ggsave("p_resamp_u.png", p_resamp_u, width = 9, height = 6)
-
+ggsave("p_resamp_u.png", p_resamp_u, width = 7.5, height = 7)
 
 ##################################################################################
 # Predict in test data
@@ -663,61 +605,57 @@ p_xgb_u5 <- predict(xgb_u5, newdata = X_back_track_test_u, type = "prob")
 p_xgb_u6 <- predict(xgb_u6, newdata = X_back_track_test_u, type = "prob")
 p_xgb_u7 <- predict(xgb_u7, newdata = X_back_track_test_u, type = "prob")
 
-p_rf_u1 <- predict(rf_u1, newdata = X_back_track_test_u, type = "prob")
-p_rf_u2 <- predict(rf_u2, newdata = X_back_track_test_u, type = "prob")
-p_rf_u3 <- predict(rf_u3, newdata = X_back_track_test_u, type = "prob")
-p_rf_u4 <- predict(rf_u4, newdata = X_back_track_test_u, type = "prob")
-p_rf_u5 <- predict(rf_u5, newdata = X_back_track_test_u, type = "prob")
-p_rf_u6 <- predict(rf_u6, newdata = X_back_track_test_u, type = "prob")
-p_rf_u7 <- predict(rf_u7, newdata = X_back_track_test_u, type = "prob")
-
 # ROC curves - Undecided
 
-roc_xgb_u1 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u1$undecided, smooth = T)
-roc_xgb_u2 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u2$undecided, smooth = T)
-roc_xgb_u3 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u3$undecided, smooth = T)
-roc_xgb_u4 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u4$undecided, smooth = T)
-roc_xgb_u5 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u5$undecided, smooth = T)
-roc_xgb_u6 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u6$undecided, smooth = T)
-roc_xgb_u7 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u7$undecided, smooth = T)
+roc_xgb_u1 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u1$undecided)
+roc_xgb_u2 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u2$undecided)
+roc_xgb_u3 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u3$undecided)
+roc_xgb_u4 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u4$undecided)
+roc_xgb_u5 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u5$undecided)
+roc_xgb_u6 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u6$undecided)
+roc_xgb_u7 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u7$undecided)
 
-ggplot() + 
-  geom_line(aes(x = 1 - roc_xgb_u1$specificities, y = roc_xgb_u1$sensitivities, color = "black")) +
-  geom_line(aes(x = 1 - roc_xgb_u2$specificities, y = roc_xgb_u2$sensitivities, color = "grey50")) +
-  geom_line(aes(x = 1 - roc_xgb_u3$specificities, y = roc_xgb_u3$sensitivities, color = "forestgreen")) +
-  geom_line(aes(x = 1 - roc_xgb_u4$specificities, y = roc_xgb_u4$sensitivities, color = "orange")) +
-  geom_line(aes(x = 1 - roc_xgb_u5$specificities, y = roc_xgb_u5$sensitivities, color = "red")) +
-  geom_line(aes(x = 1 - roc_xgb_u6$specificities, y = roc_xgb_u6$sensitivities, color = "blue")) +
-  geom_line(aes(x = 1 - roc_xgb_u7$specificities, y = roc_xgb_u7$sensitivities, color = "darkviolet")) +
-  labs(x = "1 - Specificity", y = "Sensitivity") +
-  geom_abline(aes(intercept = 0, slope = 1)) +
-  scale_colour_manual(name = "", values = c("black" = "black", "grey50" = "grey50", "forestgreen" = "forestgreen", "orange" =  "orange", "red" = "red", "blue" = "blue", "darkviolet" = "darkviolet"),
-                      breaks = c("black", "grey50", "forestgreen", "orange", "red", "blue", "darkviolet"),
-                      labels = c("black" = "Background", "grey50" = "Back+General", "forestgreen" = "Back+Fb_news", "orange" = "Back+Apps", "red" = "Back+Fake", "blue" = "Track_only", "darkviolet" = "Back+Track"))
+ggroc(list("Demo" = roc_xgb_u1, "Tracking" = roc_xgb_u6, "Demo+Tracking" = roc_xgb_u7)) +
+  geom_abline(aes(intercept = 1, slope = 1)) +
+  scale_colour_manual(name = "", values = c("#F8766D", "#00BA38", "#619CFF"),
+                      breaks = c("Demo", "Tracking", "Demo+Tracking"))
 
-ggsave("p_roc_u1.png", width = 7.5, height = 6)
+ggsave("p_roc_u.png", width = 7.5, height = 6)
 
-roc_rf_u1 <- roc(response = X_back_track_test_u$undecided, predictor = p_rf_u1$undecided, smooth = T)
-roc_rf_u2 <- roc(response = X_back_track_test_u$undecided, predictor = p_rf_u2$undecided, smooth = T)
-roc_rf_u3 <- roc(response = X_back_track_test_u$undecided, predictor = p_rf_u3$undecided, smooth = T)
-roc_rf_u4 <- roc(response = X_back_track_test_u$undecided, predictor = p_rf_u4$undecided, smooth = T)
-roc_rf_u5 <- roc(response = X_back_track_test_u$undecided, predictor = p_rf_u5$undecided, smooth = T)
-roc_rf_u6 <- roc(response = X_back_track_test_u$undecided, predictor = p_rf_u6$undecided, smooth = T)
-roc_rf_u7 <- roc(response = X_back_track_test_u$undecided, predictor = p_rf_u7$undecided, smooth = T)
+# Performance at "optimal" threshold
 
-ggplot() + 
-  geom_line(aes(x = 1 - roc_rf_u1$specificities, y = roc_rf_u1$sensitivities, color = "black")) +
-  geom_line(aes(x = 1 - roc_rf_u2$specificities, y = roc_rf_u2$sensitivities, color = "grey50")) +
-  geom_line(aes(x = 1 - roc_rf_u3$specificities, y = roc_rf_u3$sensitivities, color = "forestgreen")) +
-  geom_line(aes(x = 1 - roc_rf_u4$specificities, y = roc_rf_u4$sensitivities, color = "orange")) +
-  geom_line(aes(x = 1 - roc_rf_u5$specificities, y = roc_rf_u5$sensitivities, color = "red")) +
-  geom_line(aes(x = 1 - roc_rf_u6$specificities, y = roc_rf_u6$sensitivities, color = "blue")) +
-  geom_line(aes(x = 1 - roc_rf_u7$specificities, y = roc_rf_u7$sensitivities, color = "darkviolet")) +
-  labs(x = "1 - Specificity", y = "Sensitivity") +
-  geom_abline(aes(intercept = 0, slope = 1)) +
-  scale_colour_manual(name = "", values = c("black" = "black", "grey50" = "grey50", "forestgreen" = "forestgreen", "orange" =  "orange", "red" = "red", "blue" = "blue", "darkviolet" = "darkviolet"),
-                      breaks = c("black", "grey50", "forestgreen", "orange", "red", "blue", "darkviolet"),
-                      labels = c("black" = "Background", "grey50" = "Back+General", "forestgreen" = "Back+Fb_news", "orange" = "Back+Apps", "red" = "Back+Fake", "blue" = "Track_only", "darkviolet" = "Back+Track"))
+prop.table(table(X_back_track_train$undecided))
+roc_xgb_u1_t <- coords(roc_xgb_u1, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
+roc_xgb_u2_t <- coords(roc_xgb_u2, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
+roc_xgb_u3_t <- coords(roc_xgb_u3, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
+roc_xgb_u4_t <- coords(roc_xgb_u4, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
+roc_xgb_u5_t <- coords(roc_xgb_u5, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
+roc_xgb_u6_t <- coords(roc_xgb_u6, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
+roc_xgb_u7_t <- coords(roc_xgb_u7, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
 
-ggsave("p_roc_u2.png", width = 7.5, height = 6)
+c_xgb_u1 <- as.factor(ifelse(p_xgb_u1$undecided > roc_xgb_u1_t[1], "undecided", "decided"))
+c_xgb_u2 <- as.factor(ifelse(p_xgb_u2$undecided > roc_xgb_u2_t[1], "undecided", "decided"))
+c_xgb_u3 <- as.factor(ifelse(p_xgb_u3$undecided > roc_xgb_u3_t[1], "undecided", "decided"))
+c_xgb_u4 <- as.factor(ifelse(p_xgb_u4$undecided > roc_xgb_u4_t[1], "undecided", "decided"))
+c_xgb_u5 <- as.factor(ifelse(p_xgb_u5$undecided > roc_xgb_u5_t[1], "undecided", "decided"))
+c_xgb_u6 <- as.factor(ifelse(p_xgb_u6$undecided > roc_xgb_u6_t[1], "undecided", "decided"))
+c_xgb_u7 <- as.factor(ifelse(p_xgb_u7$undecided > roc_xgb_u7_t[1], "undecided", "decided"))
 
+cm1 <- confusionMatrix(c_xgb_u1, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
+cm2 <- confusionMatrix(c_xgb_u2, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
+cm3 <- confusionMatrix(c_xgb_u3, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
+cm4 <- confusionMatrix(c_xgb_u4, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
+cm5 <- confusionMatrix(c_xgb_u5, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
+cm6 <- confusionMatrix(c_xgb_u6, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
+cm7 <- confusionMatrix(c_xgb_u7, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
+
+Demo <- c(cm1$overall[1], cm1$byClass[c(1:2,5,7)], cm1$overall[2])
+Demo_Tracking_general <- c(cm2$overall[1], cm2$byClass[c(1:2,5,7)], cm2$overall[2])
+Demo_Tracking_news <- c(cm3$overall[1], cm3$byClass[c(1:2,5,7)], cm3$overall[2])
+Demo_Tracking_apps <- c(cm4$overall[1], cm4$byClass[c(1:2,5,7)], cm4$overall[2])
+Demo_Tracking_fake <- c(cm5$overall[1], cm5$byClass[c(1:2,5,7)], cm5$overall[2])
+Tracking <- c(cm6$overall[1], cm6$byClass[c(1:2,5,7)], cm6$overall[2])
+Demo_Tracking <- c(cm7$overall[1], cm7$byClass[c(1:2,5,7)], cm7$overall[2])
+
+tab <- rbind(Demo, Tracking, Demo_Tracking_general, Demo_Tracking_news, Demo_Tracking_apps, Demo_Tracking_fake, Demo_Tracking)
+tab
