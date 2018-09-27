@@ -12,8 +12,8 @@ library(e1071)
 library(partykit)
 library(xgboost)
 library(ranger)
-library(gridExtra)
 library(pROC)
+library(rtf)
 
 # Set path
 setwd("~/Respondi/RESPONDI_w3")
@@ -1130,52 +1130,79 @@ confusionMatrix(rf_p7)
 # Variable Importance
 ##################################################################################
 
-plot(varImp(xgb_v1), top = 10)
-plot(varImp(xgb_v2), top = 10)
-plot(varImp(xgb_v3), top = 10)
-plot(varImp(xgb_v4), top = 10)
-plot(varImp(xgb_v5), top = 10)
-plot(varImp(xgb_v6), top = 10)
 plot(varImp(xgb_v7), top = 10)
 
-plot(varImp(xgb_a1), top = 10)
-plot(varImp(xgb_a2), top = 10)
-plot(varImp(xgb_a3), top = 10)
-plot(varImp(xgb_a4), top = 10)
-plot(varImp(xgb_a5), top = 10)
-plot(varImp(xgb_a6), top = 10)
-plot(varImp(xgb_a7), top = 10)
+imp_xgb_v7 <- varImp(xgb_v7)$importance
+imp_xgb_v7 <- rownames_to_column(imp_xgb_v7, "varname")
 
-plot(varImp(xgb_l1), top = 10)
-plot(varImp(xgb_l2), top = 10)
-plot(varImp(xgb_l3), top = 10)
-plot(varImp(xgb_l4), top = 10)
-plot(varImp(xgb_l5), top = 10)
-plot(varImp(xgb_l6), top = 10)
-plot(varImp(xgb_l7), top = 10)
+imp_xgb_v7 <-
+  imp_xgb_v7 %>%
+  top_n(10, Overall) %>%
+  mutate(order = 11 - row_number())
 
-plot(varImp(xgb_p1), top = 10)
-plot(varImp(xgb_p5), top = 10)
-plot(varImp(xgb_p6), top = 10)
-plot(varImp(xgb_p7), top = 10)
+match(imp_xgb_v7$varname, names(X_back_track_train))
+imp_xgb_v7$varname <- c("Tracking news", "Demo: Manual Worker", "Demo: Age", "Demo: High school degree", "Demo: Own house", "Tracking news", "Tracking domain", "Tracking apps", "Tracking domain", "Tracking domain")
 
-imp_xgb_v1 <- varImp(xgb_v1)$importance
-imp_xgb_v1 <- rownames_to_column(imp_xgb_v1, "varname")
-
-imp_xgb_v1 <-
-  imp_xgb_v1 %>%
-  top_n(5, Overall) %>%
-  mutate(order = 6 - row_number())
-
-ggplot(imp_xgb_v1) +
+ggplot(imp_xgb_v7) +
   geom_point(aes(x = Overall, y = order)) + 
-  labs(x = "", y = "") +
+  geom_segment(aes(y = order, yend = order, x = 1, xend = Overall)) +
+  labs(x = "Importance", y = "") +
   xlim(0, 100) +
   scale_y_continuous(
-    breaks = imp_xgb_v1$order,
-    labels = imp_xgb_v1$varname)
+    breaks = imp_xgb_v7$order,
+    labels = imp_xgb_v7$varname)
 
-ggsave("p_imp_v1.png", width = 6, height = 6)
+ggsave("p_imp_v7.png", width = 6, height = 6)
+
+plot(varImp(xgb_a7), top = 10)
+
+imp_xgb_a7 <- varImp(xgb_a7)$importance
+imp_xgb_a7 <- rownames_to_column(imp_xgb_a7, "varname")
+
+imp_xgb_a7 <-
+  imp_xgb_a7 %>%
+  top_n(10, Overall) %>%
+  mutate(order = 11 - row_number())
+
+match(imp_xgb_a7$varname, names(X_back_track_train))
+imp_xgb_a7$varname <- c("Tracking fake", "Demo: High school degree", "Tracking domain", "Demo: Gender", "Tracking domain", "Tracking domain", "Tracking domain", "Tracking domain", "Tracking domain", "Tracking domain")
+
+ggplot(imp_xgb_a7) +
+  geom_point(aes(x = Overall, y = order)) + 
+  geom_segment(aes(y = order, yend = order, x = 1, xend = Overall)) +
+  labs(x = "Importance", y = "") +
+  xlim(0, 100) +
+  scale_y_continuous(
+    breaks = imp_xgb_a7$order,
+    labels = imp_xgb_a7$varname)
+
+ggsave("p_imp_a7.png", width = 6, height = 6)
+
+plot(varImp(xgb_l7), top = 10)
+
+imp_xgb_l7 <- varImp(xgb_l7)$importance
+imp_xgb_l7 <- rownames_to_column(imp_xgb_l7, "varname")
+
+imp_xgb_l7 <-
+  imp_xgb_l7 %>%
+  top_n(10, Overall) %>%
+  mutate(order = 11 - row_number())
+
+match(imp_xgb_l7$varname, names(X_back_track_train))
+imp_xgb_l7$varname <- c("Tracking domain", "Tracking fake", "Tracking news", "Tracking apps", "Tracking domain", "Tracking domain", "Tracking domain", "Tracking apps", "Tracking apps", "Tracking domain")
+
+ggplot(imp_xgb_l7) +
+  geom_point(aes(x = Overall, y = order)) + 
+  geom_segment(aes(y = order, yend = order, x = 1, xend = Overall)) +
+  labs(x = "Importance", y = "") +
+  xlim(0, 100) +
+  scale_y_continuous(
+    breaks = imp_xgb_l7$order,
+    labels = imp_xgb_l7$varname)
+
+ggsave("p_imp_l7.png", width = 6, height = 6)
+
+# plot(varImp(xgb_p7), top = 10)
 
 ##################################################################################
 # Compare CV performance
@@ -1329,7 +1356,7 @@ p_xgb_l5 <- predict(xgb_l5, newdata = X_back_track_test_l, type = "prob")
 p_xgb_l6 <- predict(xgb_l6, newdata = X_back_track_test_l, type = "prob")
 p_xgb_l7 <- predict(xgb_l7, newdata = X_back_track_test_l, type = "prob")
 
-X_back_track_test_l <- X_back_track_test[!is.na(X_back_track_test$party_affiliation),]
+X_back_track_test_p <- X_back_track_test[!is.na(X_back_track_test$party_affiliation),]
 c_xgb_p1 <- predict(xgb_p1, newdata = X_back_track_test_p)
 c_xgb_p5 <- predict(xgb_p5, newdata = X_back_track_test_p)
 c_xgb_p6 <- predict(xgb_p6, newdata = X_back_track_test_p)
@@ -1424,6 +1451,10 @@ Demo_Tracking <- c(cm7$overall[1], cm7$byClass[c(1:2,5,7)], cm7$overall[2])
 tab <- rbind(Demo, Tracking, Demo_Tracking_general, Demo_Tracking_news, Demo_Tracking_apps, Demo_Tracking_fake, Demo_Tracking)
 tab
 
+rtffile <- RTF("t_perf_v.doc")
+addTable(rtffile, cbind(rownames(tab),round(tab, digits = 3)))
+done(rtffile)
+
 # Performance at "optimal" threshold - AFD
 
 prop.table(table(X_back_track_train$AFD))
@@ -1462,6 +1493,10 @@ Demo_Tracking <- c(cm7$overall[1], cm7$byClass[c(1:2,5,7)], cm7$overall[2])
 tab <- rbind(Demo, Tracking, Demo_Tracking_general, Demo_Tracking_news, Demo_Tracking_apps, Demo_Tracking_fake, Demo_Tracking)
 tab
 
+rtffile <- RTF("t_perf_a.doc")
+addTable(rtffile, cbind(rownames(tab),round(tab, digits = 3)))
+done(rtffile)
+
 # Performance at "optimal" threshold - LEFT
 
 prop.table(table(X_back_track_train$LEFT))
@@ -1499,3 +1534,7 @@ Demo_Tracking <- c(cm7$overall[1], cm7$byClass[c(1:2,5,7)], cm7$overall[2])
 
 tab <- rbind(Demo, Tracking, Demo_Tracking_general, Demo_Tracking_news, Demo_Tracking_apps, Demo_Tracking_fake, Demo_Tracking)
 tab
+
+rtffile <- RTF("t_perf_l.doc")
+addTable(rtffile, cbind(rownames(tab),round(tab, digits = 3)))
+done(rtffile)

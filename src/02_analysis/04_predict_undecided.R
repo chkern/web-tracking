@@ -12,8 +12,8 @@ library(e1071)
 library(partykit)
 library(xgboost)
 library(ranger)
-library(gridExtra)
 library(pROC)
+library(rtf)
 
 # Set path
 setwd("~/Respondi/RESPONDI_w2")
@@ -525,29 +525,27 @@ plot(rf_u7)
 # Variable Importance
 ##################################################################################
 
-plot(varImp(xgb_u1), top = 10)
-plot(varImp(xgb_u2), top = 10)
-plot(varImp(xgb_u3), top = 10)
-plot(varImp(xgb_u4), top = 10)
-plot(varImp(xgb_u5), top = 10)
-plot(varImp(xgb_u6), top = 10)
 plot(varImp(xgb_u7), top = 10)
 
-imp_xgb_u1 <- varImp(xgb_u1)$importance
-imp_xgb_u1 <- rownames_to_column(imp_xgb_u1, "varname")
+imp_xgb_u7 <- varImp(xgb_u7)$importance
+imp_xgb_u7 <- rownames_to_column(imp_xgb_u7, "varname")
 
-imp_xgb_u1 <-
-  imp_xgb_u1 %>%
-  top_n(5, Overall) %>%
-  mutate(order = 6 - row_number())
+imp_xgb_u7 <-
+  imp_xgb_u7 %>%
+  top_n(10, Overall) %>%
+  mutate(order = 11 - row_number())
 
-ggplot(imp_xgb_u1) +
+match(imp_xgb_u7$varname, names(X_back_track_train))
+imp_xgb_u7$varname <- c("Demo: Gender", "Tracking domain", "Demo: Single, living w. partner", "Tracking domain", "Demo: Age", "Tracking apps", "Tracking domain", "Demo: HH Inc no answer", "Tracking apps", "Tracking domain")
+
+ggplot(imp_xgb_u7) +
   geom_point(aes(x = Overall, y = order)) + 
-  labs(x = "", y = "") +
+  geom_segment(aes(y = order, yend = order, x = 1, xend = Overall)) +
+  labs(x = "Importance", y = "") +
   xlim(0, 100) +
   scale_y_continuous(
-    breaks = imp_xgb_u1$order,
-    labels = imp_xgb_u1$varname)
+    breaks = imp_xgb_u7$order,
+    labels = imp_xgb_u7$varname)
 
 ggsave("p_imp_u1.png", width = 6, height = 6)
 
@@ -659,3 +657,7 @@ Demo_Tracking <- c(cm7$overall[1], cm7$byClass[c(1:2,5,7)], cm7$overall[2])
 
 tab <- rbind(Demo, Tracking, Demo_Tracking_general, Demo_Tracking_news, Demo_Tracking_apps, Demo_Tracking_fake, Demo_Tracking)
 tab
+
+rtffile <- RTF("t_perf_u.doc")
+addTable(rtffile, cbind(rownames(tab),round(tab, digits = 3)))
+done(rtffile)
