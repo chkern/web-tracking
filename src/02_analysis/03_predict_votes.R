@@ -1,10 +1,7 @@
 ##################################################################################
 
-library(plyr)
 library(tidyverse)
 library(haven)
-library(dummies)
-library(car)
 library(caret)
 library(rpart)
 library(MLmetrics)
@@ -22,8 +19,7 @@ setwd("~/Respondi/RESPONDI_w3")
 load("./background_info/background.RData")
 back <- select(background, panelist_id, m_1000, m_1001, m_1006, md_2806,
                md_0004, md_0006, md_1171, md_1172, md_1174, md_1175, md_1176,
-               md_1181, md_1223, md_1264, md_1634, md_1635, md_1660, 
-               md_2172, md_2189, md_2473, md_2861, md_1000)
+               md_1181, md_1223, md_1264, md_1634, md_1635, md_1000)
 back <- droplevels(back)
 rm(background)
 
@@ -69,21 +65,16 @@ back <- rename(back,
                twn_size = md_1264,
                job_dep = md_1634,
                job_status = md_1635,
-               no_empees = md_1660,
-               num_cars = md_2172,
-               num_bike = md_2189,
-               insur_priv  = md_2473,
-               insur_pub  = md_2861,
                industry = md_1000)
 
 # Fill all missings in categorial columns with "NONE", so we can keep them in our analysis
 
 back[,c("gender", "state", "hh_size", "num_children", "net_inc", "hh_inc", "accom_type", "legal_status", 
-        "edu_school", "edu_voc", "emp_type", "occup", "twn_size", "job_dep", "job_status", "no_empees",
-        "num_cars", "num_bike", "insur_priv", "insur_pub", "industry", "why_unemp", "child_in_hh")] <-
+        "edu_school", "edu_voc", "emp_type", "occup", "twn_size", "job_dep", "job_status", "industry", 
+        "why_unemp", "child_in_hh")] <-
     lapply(back[,c("gender", "state", "hh_size", "num_children", "net_inc", "hh_inc", "accom_type", "legal_status", 
-                  "edu_school", "edu_voc","emp_type", "occup", "twn_size", "job_dep", "job_status", "no_empees",
-                  "num_cars", "num_bike", "insur_priv", "insur_pub", "industry", "why_unemp", "child_in_hh")], function(back){`levels<-`(addNA(back),c(levels(back),"None"))})
+                  "edu_school", "edu_voc","emp_type", "occup", "twn_size", "job_dep", "job_status", "industry", 
+                  "why_unemp", "child_in_hh")], function(back){`levels<-`(addNA(back),c(levels(back),"None"))})
 
 # Clean factor levels
 
@@ -103,11 +94,6 @@ levels(back$edu_school) <- gsub("[^a-zA-Z0-9]", "", levels(back$edu_school))
 levels(back$edu_voc) <- gsub("[^a-zA-Z0-9]", "", levels(back$edu_voc))
 levels(back$job_dep) <- gsub("[^a-zA-Z0-9]", "", levels(back$job_dep))
 levels(back$job_status) <- gsub("[^a-zA-Z0-9]", "", levels(back$job_status))
-levels(back$no_empees) <- gsub("[^a-zA-Z0-9]", "", levels(back$no_empees))
-levels(back$num_cars) <- gsub("[^a-zA-Z0-9]", "", levels(back$num_cars))
-levels(back$num_bike) <- gsub("[^a-zA-Z0-9]", "", levels(back$num_bike))
-levels(back$insur_priv) <- gsub("[^a-zA-Z0-9]", "", levels(back$insur_priv))
-levels(back$insur_pub) <- gsub("[^a-zA-Z0-9]", "", levels(back$insur_pub))
 levels(back$industry) <- gsub("[^a-zA-Z0-9]", "", levels(back$industry))
 levels(back$why_unemp) <- gsub("[^a-zA-Z0-9]", "", levels(back$why_unemp))
 levels(back$child_in_hh) <- gsub("[^a-zA-Z0-9]", "", levels(back$child_in_hh))
@@ -115,9 +101,9 @@ back <- droplevels(back)
 
 # delete variables with hardly any variation
 
-zero_var_track <- nearZeroVar(tracking, freqCut = 99.95/0.05, uniqueCut = 0.1, names = TRUE, allowParallel = T)
-tracking <- tracking[ , -which(names(tracking) %in% zero_var_track)]
-rm(zero_var_track)
+# zero_var_track <- nearZeroVar(tracking, freqCut = 99.95/0.05, uniqueCut = 0.1, names = TRUE, allowParallel = T)
+# tracking <- tracking[ , -which(names(tracking) %in% zero_var_track)]
+# rm(zero_var_track)
 
 # put datasets together
 
@@ -129,15 +115,14 @@ X_back_track[is.na(X_back_track)] <- 0
 
 # Blocks of features (careful with column numbers)
 
-background  <- names(X_back_track[409:432])
-track_general <- names(X_back_track[2:164])
-track_fb_news <- names(X_back_track[c(165:176,341:376)])
-track_apps <- names(X_back_track[181:340])
-track_oeff_fake <- names(X_back_track[377:407])
+survey_demo  <- names(X_back_track[409:427])
+track_general <- names(X_back_track[c(2:164,177:180,380:381,387:388,391:392)])
+track_news_media <- names(X_back_track[c(165:176,341:379,382:386,389:390,393:397)])
+track_fake <- names(X_back_track[398:407])
 
-names(X_back_track)[433:ncol(X_back_track)] <- gsub("[^a-zA-Z0-9]", "", names(X_back_track)[433:ncol(X_back_track)])
+names(X_back_track)[428:ncol(X_back_track)] <- gsub("[^a-zA-Z0-9]", "", names(X_back_track)[428:ncol(X_back_track)])
 X_back_track <- X_back_track[, !duplicated(colnames(X_back_track))]
-track_domains <- names(X_back_track[433:ncol(X_back_track)])
+track_apps_domains <- names(X_back_track[c(181:340, 428:ncol(X_back_track))])
 
 # Attach Ys to X variables
 Y <- survey_w3[,c(1,368:371)]
@@ -197,12 +182,13 @@ X_back_track_test <- X_back_track[-trainIndex,]
 
 # Caret Setup
 
-fiveStats <- function(...) c(twoClassSummary(...),
-                             defaultSummary(...))
+evalStats <- function(...) c(twoClassSummary(...),
+                             defaultSummary(...),
+                             mnLogLoss(...))
 
 ctrl1  <- trainControl(method = "cv",
                        number = 10,
-                       summaryFunction = fiveStats,
+                       summaryFunction = evalStats,
                        classProbs = TRUE,
                        verboseIter = TRUE)
 
@@ -221,11 +207,11 @@ ctrl2  <- trainControl(method = "cv",
 # Models - Trees
 ##################################################################################
 
-# Voted - track_fb_news
+# Voted - track_news_media
 
 X_back_track_train_c <- X_back_track_train[!is.na(X_back_track_train$voted),]
 
-model_v1 <- paste("voted ~",paste(track_fb_news,collapse="+"))
+model_v1 <- paste("voted ~",paste(track_news_media,collapse="+"))
 
 set.seed(543856)
 eval(parse(text=paste("tree_v1 <- rpart(",model_v1,",
@@ -239,9 +225,9 @@ printcp(tree_v1)
 party_tree_v1 <- as.party(tree_v1)
 plot(party_tree_v1, gp = gpar(fontsize = 8.5))
 
-# Voted - track_apps
+# Voted - track_apps_domains
 
-model_v2 <- paste("voted ~",paste(track_apps,collapse="+"))
+model_v2 <- paste("voted ~",paste(track_apps_domains,collapse="+"))
 
 set.seed(543856)
 eval(parse(text=paste("tree_v2 <- rpart(",model_v2,",
@@ -255,103 +241,39 @@ printcp(tree_v2)
 party_tree_v2 <- as.party(tree_v2)
 plot(party_tree_v2, gp = gpar(fontsize = 8.5))
 
-# Voted - track_oeff_fake
-
-model_v3 <- paste("voted ~",paste(track_oeff_fake,collapse="+"))
-
-set.seed(543856)
-eval(parse(text=paste("tree_v3 <- rpart(",model_v3,",
-                data = X_back_track_train_c,
-                control = rpart.control(minsplit = 10,
-                                       minbucket = 3,
-                                       cp = 0.001,
-                                       maxdepth = 4))")))
-
-printcp(tree_v3)
-party_tree_v3 <- as.party(tree_v3)
-plot(party_tree_v3, gp = gpar(fontsize = 8.5))
-
-# Voted - track_domains
-
-model_v4 <- paste("voted ~",paste(track_domains,collapse="+"))
-
-set.seed(543856)
-eval(parse(text=paste("tree_v4 <- rpart(",model_v4,",
-                data = X_back_track_train_c,
-                control = rpart.control(minsplit = 10,
-                                       minbucket = 3,
-                                       cp = 0.001,
-                                       maxdepth = 4))")))
-
-printcp(tree_v4)
-party_tree_v4 <- as.party(tree_v4)
-plot(party_tree_v4, gp = gpar(fontsize = 8.5))
-
-# AFD - track_oeff_fake
+# AFD - track_fake
 
 X_back_track_train_c <- X_back_track_train[!is.na(X_back_track_train$AFD),]
 
-model_a3 <- paste("AFD ~",paste(track_oeff_fake,collapse="+"))
+model_a1 <- paste("AFD ~",paste(track_fake,collapse="+"))
 
 set.seed(543856)
-eval(parse(text=paste("tree_a3 <- rpart(",model_a3,",
+eval(parse(text=paste("tree_a1 <- rpart(",model_a1,",
                 data = X_back_track_train_c,
                 control = rpart.control(minsplit = 10,
                                        minbucket = 3,
                                        cp = 0.001,
                                        maxdepth = 4))")))
 
-printcp(tree_a3)
-party_tree_a3 <- as.party(tree_a3)
-plot(party_tree_a3, gp = gpar(fontsize = 8.5))
+printcp(tree_a1)
+party_tree_a1 <- as.party(tree_a1)
+plot(party_tree_a1, gp = gpar(fontsize = 8.5))
 
-# AFD - track_domains
+# AFD - track_apps_domains
 
-model_a4 <- paste("AFD ~",paste(track_domains,collapse="+"))
+model_a2 <- paste("AFD ~",paste(track_apps_domains,collapse="+"))
 
 set.seed(543856)
-eval(parse(text=paste("tree_a4 <- rpart(",model_a4,",
+eval(parse(text=paste("tree_a2 <- rpart(",model_a2,",
                 data = X_back_track_train_c,
                 control = rpart.control(minsplit = 10,
                                        minbucket = 3,
                                        cp = 0.001,
                                        maxdepth = 4))")))
 
-printcp(tree_a4)
-party_tree_a4 <- as.party(tree_a4)
-plot(party_tree_a4, gp = gpar(fontsize = 8.5))
-
-# LEFT - track_oeff_fake
-
-model_l3 <- paste("LEFT ~",paste(track_oeff_fake,collapse="+"))
-
-set.seed(543856)
-eval(parse(text=paste("tree_l3 <- rpart(",model_l3,",
-                data = X_back_track_train_c,
-                control = rpart.control(minsplit = 10,
-                                       minbucket = 3,
-                                       cp = 0.001,
-                                       maxdepth = 4))")))
-
-printcp(tree_l3)
-party_tree_l3 <- as.party(tree_l3)
-plot(party_tree_l3, gp = gpar(fontsize = 8.5))
-
-# LEFT - track_domains
-
-model_l4 <- paste("LEFT ~",paste(track_domains,collapse="+"))
-
-set.seed(543856)
-eval(parse(text=paste("tree_l4 <- rpart(",model_l4,",
-                data = X_back_track_train_c,
-                control = rpart.control(minsplit = 10,
-                                       minbucket = 3,
-                                       cp = 0.001,
-                                       maxdepth = 4))")))
-
-printcp(tree_l4)
-party_tree_l4 <- as.party(tree_l4)
-plot(party_tree_l4, gp = gpar(fontsize = 8.5))
+printcp(tree_a2)
+party_tree_a2 <- as.party(tree_a2)
+plot(party_tree_a2, gp = gpar(fontsize = 8.5))
 
 ##################################################################################
 # Models - XGBoost
@@ -359,24 +281,23 @@ plot(party_tree_l4, gp = gpar(fontsize = 8.5))
 
 # Voted
 
-model_v1 <- paste("voted ~",paste(background,collapse="+"))
-model_v2 <- paste(model_v1,paste("+"),paste(track_general,collapse="+"))
-model_v3 <- paste(model_v1,paste("+"),paste(track_fb_news,collapse="+"))
-model_v4 <- paste(model_v1,paste("+"),paste(track_apps,collapse="+"))
-model_v5 <- paste(model_v1,paste("+"),paste(track_oeff_fake,collapse="+"))
-model_v6 <- paste("voted ~",paste(track_general,collapse="+"))
-model_v6 <- paste(model_v6,paste("+"),paste(track_fb_news,collapse="+"))
-model_v6 <- paste(model_v6,paste("+"),paste(track_apps,collapse="+"))
-model_v6 <- paste(model_v6,paste("+"),paste(track_oeff_fake,collapse="+"))
-model_v6 <- paste(model_v6,paste("+"),paste(track_domains,collapse="+"))
-model_v7 <- paste(model_v6,paste("+"),paste(background,collapse="+"))
+model_v1 <- paste("voted ~", paste(survey_demo, collapse="+"))
+model_v2 <- paste(model_v1, paste("+"), paste(track_general, collapse="+"))
+model_v3 <- paste(model_v1, paste("+"), paste(track_news_media, collapse="+"))
+model_v4 <- paste(model_v1, paste("+"), paste(track_fake, collapse="+"))
+model_v5 <- paste(model_v1, paste("+"), paste(track_apps_domains, collapse="+"))
+model_v6 <- paste("voted ~", paste(track_general, collapse="+"))
+model_v6 <- paste(model_v6, paste("+"), paste(track_news_media, collapse="+"))
+model_v6 <- paste(model_v6, paste("+"), paste(track_fake, collapse="+"))
+model_v6 <- paste(model_v6, paste("+"), paste(track_apps_domains, collapse="+"))
+model_v7 <- paste(model_v6, paste("+"), paste(survey_demo, collapse="+"))
 
 small <- ncol(model.matrix(eval(parse(text=model_v1)), X_back_track_train))
 med <- ncol(model.matrix(eval(parse(text=model_v2)), X_back_track_train))
-full <-  small + length(track_domains)
+full <-  small + length(track_apps_domains)
 
-xgb_grid <- expand.grid(max_depth = c(1, 2, 3, 5, 7),
-                        nrounds = c(500, 750, 1000, 1250, 1500),
+xgb_grid <- expand.grid(max_depth = c(1, 2, 3, 5, 7, 9),
+                        nrounds = c(500, 750, 1000, 1500, 2000),
                         eta = c(0.005, 0.01, 0.025),
                         min_child_weight = 5,
                         subsample = 0.7,
@@ -387,7 +308,7 @@ rf_grid <- expand.grid(mtry = c(round(sqrt(small)), round(log2(small)), round(sq
                        splitrule = c("gini", "extratrees"),
                        min.node.size = c(1, 5))
 
-# Voted - background
+# Voted - survey_demo
 
 set.seed(303493)
 eval(parse(text=paste("xgb_v1 <- train(",model_v1,",
@@ -395,7 +316,7 @@ eval(parse(text=paste("xgb_v1 <- train(",model_v1,",
                 method = 'xgbTree',
                 trControl = ctrl1,
                 tuneGrid = xgb_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 na.action = na.omit)")))
 
 xgb_v1
@@ -407,14 +328,14 @@ eval(parse(text=paste("rf_v1 <- train(",model_v1,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
 rf_v1
 plot(rf_v1)
 
-# Voted - background + track_general
+# Voted - survey_demo + track_general
 
 set.seed(303493)
 eval(parse(text=paste("xgb_v2 <- train(",model_v2,",
@@ -422,7 +343,7 @@ eval(parse(text=paste("xgb_v2 <- train(",model_v2,",
                 method = 'xgbTree',
                 trControl = ctrl1,
                 tuneGrid = xgb_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 na.action = na.omit)")))
 
 xgb_v2
@@ -434,14 +355,14 @@ eval(parse(text=paste("rf_v2 <- train(",model_v2,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
 rf_v2
 plot(rf_v2)
 
-# Voted - background + track_fb_news
+# Voted - survey_demo + track_news_media
 
 set.seed(303493)
 eval(parse(text=paste("xgb_v3 <- train(",model_v3,",
@@ -449,7 +370,7 @@ eval(parse(text=paste("xgb_v3 <- train(",model_v3,",
                 method = 'xgbTree',
                 trControl = ctrl1,
                 tuneGrid = xgb_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 na.action = na.omit)")))
 
 xgb_v3
@@ -461,14 +382,14 @@ eval(parse(text=paste("rf_v3 <- train(",model_v3,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
 rf_v3
 plot(rf_v3)
 
-# Voted - background + track_apps
+# Voted - survey_demo + track_fake
 
 set.seed(303493)
 eval(parse(text=paste("xgb_v4 <- train(",model_v4,",
@@ -476,7 +397,7 @@ eval(parse(text=paste("xgb_v4 <- train(",model_v4,",
                 method = 'xgbTree',
                 trControl = ctrl1,
                 tuneGrid = xgb_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 na.action = na.omit)")))
 
 xgb_v4
@@ -488,14 +409,14 @@ eval(parse(text=paste("rf_v4 <- train(",model_v4,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
 rf_v4
 plot(rf_v4)
 
-# Voted - background + track_oeff_fake
+# Voted - survey_demo + track_apps_domains
 
 set.seed(303493)
 eval(parse(text=paste("xgb_v5 <- train(",model_v5,",
@@ -503,7 +424,7 @@ eval(parse(text=paste("xgb_v5 <- train(",model_v5,",
                 method = 'xgbTree',
                 trControl = ctrl1,
                 tuneGrid = xgb_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 na.action = na.omit)")))
 
 xgb_v5
@@ -515,7 +436,7 @@ eval(parse(text=paste("rf_v5 <- train(",model_v5,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
@@ -530,7 +451,7 @@ eval(parse(text=paste("xgb_v6 <- train(",model_v6,",
                 method = 'xgbTree',
                 trControl = ctrl1,
                 tuneGrid = xgb_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 na.action = na.omit)")))
 
 xgb_v6
@@ -542,14 +463,14 @@ eval(parse(text=paste("rf_v6 <- train(",model_v6,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
 rf_v6
 plot(rf_v6)
 
-# Voted - tracking full + background
+# Voted - tracking data + survey_demo
 
 set.seed(303493)
 eval(parse(text=paste("xgb_v7 <- train(",model_v7,",
@@ -557,7 +478,7 @@ eval(parse(text=paste("xgb_v7 <- train(",model_v7,",
                 method = 'xgbTree',
                 trControl = ctrl1,
                 tuneGrid = xgb_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 na.action = na.omit)")))
 
 xgb_v7
@@ -569,14 +490,14 @@ eval(parse(text=paste("rf_v7 <- train(",model_v7,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
 rf_v7
 plot(rf_v7)
 
-# Voted - tracking full + background w. feature selection
+# Voted - tracking data + survey_demo w. feature selection
 
 #set.seed(303493)
 #eval(parse(text=paste("xgb_v8 <- sbf(",model_v7,",
@@ -585,7 +506,7 @@ plot(rf_v7)
 #            trControl = ctrl1,
 #            sbfControl = sbf_ctrl,
 #            tuneGrid = xgb_grid,
-#            metric = 'ROC',
+#            metric = 'logLoss',
 #            na.action = na.omit)")))
 
 #xgb_v8
@@ -595,19 +516,18 @@ plot(rf_v7)
 
 # AFD
 
-model_a1 <- paste("AFD ~",paste(background,collapse="+"))
-model_a2 <- paste(model_a1,paste("+"),paste(track_general,collapse="+"))
-model_a3 <- paste(model_a1,paste("+"),paste(track_fb_news,collapse="+"))
-model_a4 <- paste(model_a1,paste("+"),paste(track_apps,collapse="+"))
-model_a5 <- paste(model_a1,paste("+"),paste(track_oeff_fake,collapse="+"))
-model_a6 <- paste("AFD ~",paste(track_general,collapse="+"))
-model_a6 <- paste(model_a6,paste("+"),paste(track_fb_news,collapse="+"))
-model_a6 <- paste(model_a6,paste("+"),paste(track_apps,collapse="+"))
-model_a6 <- paste(model_a6,paste("+"),paste(track_oeff_fake,collapse="+"))
-model_a6 <- paste(model_a6,paste("+"),paste(track_domains,collapse="+"))
-model_a7 <- paste(model_a6,paste("+"),paste(background,collapse="+"))
+model_a1 <- paste("AFD ~", paste(survey_demo, collapse="+"))
+model_a2 <- paste(model_a1, paste("+"), paste(track_general, collapse="+"))
+model_a3 <- paste(model_a1, paste("+"), paste(track_news_media, collapse="+"))
+model_a4 <- paste(model_a1, paste("+"), paste(track_fake, collapse="+"))
+model_a5 <- paste(model_a1, paste("+"), paste(track_apps_domains, collapse="+"))
+model_a6 <- paste("AFD ~", paste(track_general, collapse="+"))
+model_a6 <- paste(model_a6, paste("+"), paste(track_news_media, collapse="+"))
+model_a6 <- paste(model_a6, paste("+"), paste(track_fake, collapse="+"))
+model_a6 <- paste(model_a6, paste("+"), paste(track_apps_domains, collapse="+"))
+model_a7 <- paste(model_a6, paste("+"), paste(survey_demo, collapse="+"))
 
-# AFD - background
+# AFD - survey_demo
 
 set.seed(303493)
 eval(parse(text=paste("xgb_a1 <- train(",model_a1,",
@@ -615,7 +535,7 @@ eval(parse(text=paste("xgb_a1 <- train(",model_a1,",
                       method = 'xgbTree',
                       trControl = ctrl1,
                       tuneGrid = xgb_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       na.action = na.omit)")))
 
 xgb_a1
@@ -627,14 +547,14 @@ eval(parse(text=paste("rf_a1 <- train(",model_a1,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
 rf_a1
 plot(rf_a1)
 
-# AFD - background + track_general
+# AFD - survey_demo + track_general
 
 set.seed(303493)
 eval(parse(text=paste("xgb_a2 <- train(",model_a2,",
@@ -642,7 +562,7 @@ eval(parse(text=paste("xgb_a2 <- train(",model_a2,",
                       method = 'xgbTree',
                       trControl = ctrl1,
                       tuneGrid = xgb_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       na.action = na.omit)")))
 
 xgb_a2
@@ -654,14 +574,14 @@ eval(parse(text=paste("rf_a2 <- train(",model_a2,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
 rf_a2
 plot(rf_a2)
 
-# AFD - background + track_fb_news
+# AFD - survey_demo + track_news_media
 
 set.seed(303493)
 eval(parse(text=paste("xgb_a3 <- train(",model_a3,",
@@ -669,7 +589,7 @@ eval(parse(text=paste("xgb_a3 <- train(",model_a3,",
                       method = 'xgbTree',
                       trControl = ctrl1,
                       tuneGrid = xgb_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       na.action = na.omit)")))
 
 xgb_a3
@@ -681,14 +601,14 @@ eval(parse(text=paste("rf_a3 <- train(",model_a3,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
 rf_a3
 plot(rf_a3)
 
-# AFD - background + track_apps
+# AFD - survey_demo + track_fake
 
 set.seed(303493)
 eval(parse(text=paste("xgb_a4 <- train(",model_a4,",
@@ -696,7 +616,7 @@ eval(parse(text=paste("xgb_a4 <- train(",model_a4,",
                 method = 'xgbTree',
                 trControl = ctrl1,
                 tuneGrid = xgb_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 na.action = na.omit)")))
 
 xgb_a4
@@ -708,14 +628,14 @@ eval(parse(text=paste("rf_a4 <- train(",model_a4,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
 rf_a4
 plot(rf_a4)
 
-# AFD - background + track_oeff_fake
+# AFD - survey_demo + track_apps_domains
 
 set.seed(303493)
 eval(parse(text=paste("xgb_a5 <- train(",model_a5,",
@@ -723,7 +643,7 @@ eval(parse(text=paste("xgb_a5 <- train(",model_a5,",
                       method = 'xgbTree',
                       trControl = ctrl1,
                       tuneGrid = xgb_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       na.action = na.omit)")))
 
 xgb_a5
@@ -735,7 +655,7 @@ eval(parse(text=paste("rf_a5 <- train(",model_a5,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
@@ -750,7 +670,7 @@ eval(parse(text=paste("xgb_a6 <- train(",model_a6,",
                 method = 'xgbTree',
                 trControl = ctrl1,
                 tuneGrid = xgb_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 na.action = na.omit)")))
 
 xgb_a6
@@ -762,14 +682,14 @@ eval(parse(text=paste("rf_a6 <- train(",model_a6,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
 rf_a6
 plot(rf_a6)
 
-# AFD - tracking full + background
+# AFD - tracking data + survey_demo
 
 set.seed(303493)
 eval(parse(text=paste("xgb_a7 <- train(",model_a7,",
@@ -777,7 +697,7 @@ eval(parse(text=paste("xgb_a7 <- train(",model_a7,",
                 method = 'xgbTree',
                 trControl = ctrl1,
                 tuneGrid = xgb_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 na.action = na.omit)")))
 
 xgb_a7
@@ -789,7 +709,7 @@ eval(parse(text=paste("rf_a7 <- train(",model_a7,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
@@ -798,19 +718,18 @@ plot(rf_a7)
 
 # LEFT
 
-model_l1 <- paste("LEFT ~",paste(background,collapse="+"))
-model_l2 <- paste(model_l1,paste("+"),paste(track_general,collapse="+"))
-model_l3 <- paste(model_l1,paste("+"),paste(track_fb_news,collapse="+"))
-model_l4 <- paste(model_l1,paste("+"),paste(track_apps,collapse="+"))
-model_l5 <- paste(model_l1,paste("+"),paste(track_oeff_fake,collapse="+"))
-model_l6 <- paste("LEFT ~",paste(track_general,collapse="+"))
-model_l6 <- paste(model_l6,paste("+"),paste(track_fb_news,collapse="+"))
-model_l6 <- paste(model_l6,paste("+"),paste(track_apps,collapse="+"))
-model_l6 <- paste(model_l6,paste("+"),paste(track_oeff_fake,collapse="+"))
-model_l6 <- paste(model_l6,paste("+"),paste(track_domains,collapse="+"))
-model_l7 <- paste(model_l6,paste("+"),paste(background,collapse="+"))
+model_l1 <- paste("LEFT ~", paste(survey_demo, collapse="+"))
+model_l2 <- paste(model_l1, paste("+"), paste(track_general, collapse="+"))
+model_l3 <- paste(model_l1, paste("+"), paste(track_news_media, collapse="+"))
+model_l4 <- paste(model_l1, paste("+"), paste(track_fake, collapse="+"))
+model_l5 <- paste(model_l1, paste("+"), paste(track_apps_domains, collapse="+"))
+model_l6 <- paste("LEFT ~", paste(track_general, collapse="+"))
+model_l6 <- paste(model_l6, paste("+"), paste(track_news_media, collapse="+"))
+model_l6 <- paste(model_l6, paste("+"), paste(track_fake, collapse="+"))
+model_l6 <- paste(model_l6, paste("+"), paste(track_apps_domains, collapse="+"))
+model_l7 <- paste(model_l6, paste("+"), paste(survey_demo, collapse="+"))
 
-# LEFT - background
+# LEFT - survey_demo
 
 set.seed(303493)
 eval(parse(text=paste("xgb_l1 <- train(",model_l1,",
@@ -818,7 +737,7 @@ eval(parse(text=paste("xgb_l1 <- train(",model_l1,",
                       method = 'xgbTree',
                       trControl = ctrl1,
                       tuneGrid = xgb_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       na.action = na.omit)")))
 
 xgb_l1
@@ -830,14 +749,14 @@ eval(parse(text=paste("rf_l1 <- train(",model_l1,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
 rf_l1
 plot(rf_l1)
 
-# LEFT - background + track_general
+# LEFT - survey_demo + track_general
 
 set.seed(303493)
 eval(parse(text=paste("xgb_l2 <- train(",model_l2,",
@@ -845,7 +764,7 @@ eval(parse(text=paste("xgb_l2 <- train(",model_l2,",
                       method = 'xgbTree',
                       trControl = ctrl1,
                       tuneGrid = xgb_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       na.action = na.omit)")))
 
 xgb_l2
@@ -857,14 +776,14 @@ eval(parse(text=paste("rf_l2 <- train(",model_l2,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
 rf_l2
 plot(rf_l2)
 
-# LEFT - background + track_fb_news
+# LEFT - survey_demo + track_news_media
 
 set.seed(303493)
 eval(parse(text=paste("xgb_l3 <- train(",model_l3,",
@@ -872,7 +791,7 @@ eval(parse(text=paste("xgb_l3 <- train(",model_l3,",
                       method = 'xgbTree',
                       trControl = ctrl1,
                       tuneGrid = xgb_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       na.action = na.omit)")))
 
 xgb_l3
@@ -884,14 +803,14 @@ eval(parse(text=paste("rf_l3 <- train(",model_l3,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
 rf_l3
 plot(rf_l3)
 
-# LEFT - background + track_apps
+# LEFT - survey_demo + track_fake
 
 set.seed(303493)
 eval(parse(text=paste("xgb_l4 <- train(",model_l4,",
@@ -899,7 +818,7 @@ eval(parse(text=paste("xgb_l4 <- train(",model_l4,",
                 method = 'xgbTree',
                 trControl = ctrl1,
                 tuneGrid = xgb_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 na.action = na.omit)")))
 
 xgb_l4
@@ -911,14 +830,14 @@ eval(parse(text=paste("rf_l4 <- train(",model_l4,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
 rf_l4
 plot(rf_l4)
 
-# LEFT - background + track_oeff_fake
+# LEFT - survey_demo + track_apps_domains
 
 set.seed(303493)
 eval(parse(text=paste("xgb_l5 <- train(",model_l5,",
@@ -926,7 +845,7 @@ eval(parse(text=paste("xgb_l5 <- train(",model_l5,",
                       method = 'xgbTree',
                       trControl = ctrl1,
                       tuneGrid = xgb_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       na.action = na.omit)")))
 
 xgb_l5
@@ -938,7 +857,7 @@ eval(parse(text=paste("rf_l5 <- train(",model_l5,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
@@ -953,7 +872,7 @@ eval(parse(text=paste("xgb_l6 <- train(",model_l6,",
                 method = 'xgbTree',
                 trControl = ctrl1,
                 tuneGrid = xgb_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 na.action = na.omit)")))
 
 xgb_l6
@@ -965,14 +884,14 @@ eval(parse(text=paste("rf_l6 <- train(",model_l6,",
                 method = 'ranger',
                 trControl = ctrl1,
                 tuneGrid = rf_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 importance = 'impurity',
                 na.action = na.omit)")))
 
 rf_l6
 plot(rf_l6)
 
-# LEFT - tracking full + background
+# LEFT - tracking data + survey_demo
 
 set.seed(303493)
 eval(parse(text=paste("xgb_l7 <- train(",model_l7,",
@@ -980,7 +899,7 @@ eval(parse(text=paste("xgb_l7 <- train(",model_l7,",
                 method = 'xgbTree',
                 trControl = ctrl1,
                 tuneGrid = xgb_grid,
-                metric = 'ROC',
+                metric = 'logLoss',
                 na.action = na.omit)")))
 
 xgb_l7
@@ -992,139 +911,12 @@ eval(parse(text=paste("rf_l7 <- train(",model_l7,",
                       method = 'ranger',
                       trControl = ctrl1,
                       tuneGrid = rf_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       importance = 'impurity',
                       na.action = na.omit)")))
 
 rf_l7
 plot(rf_l7)
-
-# Party affiliation
-
-model_p1 <- paste("party_affiliation ~",paste(background,collapse="+"))
-model_p5 <- paste(model_p1,paste("+"),paste(track_oeff_fake,collapse="+"))
-model_p6 <- paste("party_affiliation ~",paste(track_general,collapse="+"))
-model_p6 <- paste(model_p6,paste("+"),paste(track_fb_news,collapse="+"))
-model_p6 <- paste(model_p6,paste("+"),paste(track_apps,collapse="+"))
-model_p6 <- paste(model_p6,paste("+"),paste(track_oeff_fake,collapse="+"))
-model_p6 <- paste(model_p6,paste("+"),paste(track_domains,collapse="+"))
-model_p7 <- paste(model_p6,paste("+"),paste(background,collapse="+"))
-
-# Party affiliation - background data
-
-set.seed(303493)
-eval(parse(text=paste("xgb_p1 <- train(",model_p1,",
-                data = X_back_track_train,
-                method = 'xgbTree',
-                trControl = ctrl2,
-                tuneGrid = xgb_grid,
-                metric = 'AUC',
-                na.action = na.omit)")))
-
-xgb_p1
-plot(xgb_p1)
-confusionMatrix(xgb_p1)
-
-set.seed(303493)
-eval(parse(text=paste("rf_p1 <- train(",model_p1,",
-                data = X_back_track_train,
-                method = 'ranger',
-                trControl = ctrl2,
-                tuneGrid = rf_grid,
-                metric = 'ROC',
-                importance = 'impurity',
-                na.action = na.omit)")))
-
-rf_p1
-plot(rf_p1)
-confusionMatrix(rf_p1)
-
-# Party affiliation - background + track_oeff_fake
-
-set.seed(303493)
-eval(parse(text=paste("xgb_p5 <- train(",model_p5,",
-                data = X_back_track_train,
-                method = 'xgbTree',
-                trControl = ctrl2,
-                tuneGrid = xgb_grid,
-                metric = 'AUC',
-                na.action = na.omit)")))
-
-xgb_p5
-plot(xgb_p5)
-confusionMatrix(xgb_p5)
-
-set.seed(303493)
-eval(parse(text=paste("rf_p5 <- train(",model_p5,",
-                data = X_back_track_train,
-                method = 'ranger',
-                trControl = ctrl2,
-                tuneGrid = rf_grid,
-                metric = 'ROC',
-                importance = 'impurity',
-                na.action = na.omit)")))
-
-rf_p5
-plot(rf_p5)
-confusionMatrix(rf_p5)
-
-# Party affiliation - only tracking data
-
-set.seed(303493)
-eval(parse(text=paste("xgb_p6 <- train(",model_p6,",
-                data = X_back_track_train,
-                method = 'xgbTree',
-                trControl = ctrl2,
-                tuneGrid = xgb_grid,
-                metric = 'AUC',
-                na.action = na.omit)")))
-
-xgb_p6
-plot(xgb_p6)
-confusionMatrix(xgb_p6)
-
-set.seed(303493)
-eval(parse(text=paste("rf_p6 <- train(",model_p6,",
-                data = X_back_track_train,
-                method = 'ranger',
-                trControl = ctrl2,
-                tuneGrid = rf_grid,
-                metric = 'ROC',
-                importance = 'impurity',
-                na.action = na.omit)")))
-
-rf_p6
-plot(rf_p6)
-confusionMatrix(rf_p6)
-
-# Party affiliation - tracking full + background
-
-set.seed(303493)
-eval(parse(text=paste("xgb_p7 <- train(",model_p7,",
-                data = X_back_track_train,
-                method = 'xgbTree',
-                trControl = ctrl2,
-                tuneGrid = xgb_grid,
-                metric = 'ROC',
-                na.action = na.omit)")))
-
-xgb_p7
-plot(xgb_p7)
-confusionMatrix(xgb_p7)
-
-set.seed(303493)
-eval(parse(text=paste("rf_p7 <- train(",model_p7,",
-                data = X_back_track_train,
-                method = 'ranger',
-                trControl = ctrl2,
-                tuneGrid = rf_grid,
-                metric = 'ROC',
-                importance = 'impurity',
-                na.action = na.omit)")))
-
-rf_p7
-plot(rf_p7)
-confusionMatrix(rf_p7)
 
 ##################################################################################
 # Variable Importance
@@ -1355,12 +1147,6 @@ p_xgb_l4 <- predict(xgb_l4, newdata = X_back_track_test_l, type = "prob")
 p_xgb_l5 <- predict(xgb_l5, newdata = X_back_track_test_l, type = "prob")
 p_xgb_l6 <- predict(xgb_l6, newdata = X_back_track_test_l, type = "prob")
 p_xgb_l7 <- predict(xgb_l7, newdata = X_back_track_test_l, type = "prob")
-
-X_back_track_test_p <- X_back_track_test[!is.na(X_back_track_test$party_affiliation),]
-c_xgb_p1 <- predict(xgb_p1, newdata = X_back_track_test_p)
-c_xgb_p5 <- predict(xgb_p5, newdata = X_back_track_test_p)
-c_xgb_p6 <- predict(xgb_p6, newdata = X_back_track_test_p)
-p_xgb_p7 <- predict(xgb_p7, newdata = X_back_track_test_p)
 
 # ROC curves - voted
 

@@ -1,10 +1,7 @@
 ##################################################################################
 
-library(plyr)
 library(tidyverse)
 library(haven)
-library(dummies)
-library(car)
 library(caret)
 library(rpart)
 library(MLmetrics)
@@ -22,8 +19,7 @@ setwd("~/Respondi/RESPONDI_w2")
 load("./background_info/background.RData")
 back <- select(background, panelist_id, m_1000, m_1001, m_1006, md_2806,
                md_0004, md_0006, md_1171, md_1172, md_1174, md_1175, md_1176,
-               md_1181, md_1223, md_1264, md_1634, md_1635, md_1660, 
-               md_2172, md_2189, md_2473, md_2861, md_1000)
+               md_1181, md_1223, md_1264, md_1634, md_1635, md_1000)
 back <- droplevels(back)
 rm(background)
 
@@ -32,7 +28,7 @@ tracking_small <- readRDS(file = "./data/data_prep_final_small.rds")
 
 # load the tracking data (full)
 tracking <- readRDS(file = "./data/data_prep_final.rds")
-tracking <- tracking[,c(1,186:ncol(tracking))]
+tracking <- tracking[,c(1,187:ncol(tracking))]
 
 # load the wave 3 survey data
 survey_w3 <- read_dta(file = "./survey_daten/survey_data_w2.dta")
@@ -69,21 +65,16 @@ back <- rename(back,
                twn_size = md_1264,
                job_dep = md_1634,
                job_status = md_1635,
-               no_empees = md_1660,
-               num_cars = md_2172,
-               num_bike = md_2189,
-               insur_priv  = md_2473,
-               insur_pub  = md_2861,
                industry = md_1000)
 
 # Fill all missings in categorial columns with "NONE", so we can keep them in our analysis
 
 back[,c("gender", "state", "hh_size", "num_children", "net_inc", "hh_inc", "accom_type", "legal_status", 
-        "edu_school", "edu_voc", "emp_type", "occup", "twn_size", "job_dep", "job_status", "no_empees",
-        "num_cars", "num_bike", "insur_priv", "insur_pub", "industry", "why_unemp", "child_in_hh")] <-
-  lapply(back[,c("gender", "state", "hh_size", "num_children", "net_inc", "hh_inc", "accom_type", "legal_status", 
-                 "edu_school", "edu_voc","emp_type", "occup", "twn_size", "job_dep", "job_status", "no_empees",
-                 "num_cars", "num_bike", "insur_priv", "insur_pub", "industry", "why_unemp", "child_in_hh")], function(back){`levels<-`(addNA(back),c(levels(back),"None"))})
+        "edu_school", "edu_voc", "emp_type", "occup", "twn_size", "job_dep", "job_status", "industry", 
+        "why_unemp", "child_in_hh")] <-
+    lapply(back[,c("gender", "state", "hh_size", "num_children", "net_inc", "hh_inc", "accom_type", "legal_status", 
+                 "edu_school", "edu_voc","emp_type", "occup", "twn_size", "job_dep", "job_status", "industry", 
+                 "why_unemp", "child_in_hh")], function(back){`levels<-`(addNA(back),c(levels(back),"None"))})
 
 # Clean factor levels
 
@@ -103,11 +94,6 @@ levels(back$edu_school) <- gsub("[^a-zA-Z0-9]", "", levels(back$edu_school))
 levels(back$edu_voc) <- gsub("[^a-zA-Z0-9]", "", levels(back$edu_voc))
 levels(back$job_dep) <- gsub("[^a-zA-Z0-9]", "", levels(back$job_dep))
 levels(back$job_status) <- gsub("[^a-zA-Z0-9]", "", levels(back$job_status))
-levels(back$no_empees) <- gsub("[^a-zA-Z0-9]", "", levels(back$no_empees))
-levels(back$num_cars) <- gsub("[^a-zA-Z0-9]", "", levels(back$num_cars))
-levels(back$num_bike) <- gsub("[^a-zA-Z0-9]", "", levels(back$num_bike))
-levels(back$insur_priv) <- gsub("[^a-zA-Z0-9]", "", levels(back$insur_priv))
-levels(back$insur_pub) <- gsub("[^a-zA-Z0-9]", "", levels(back$insur_pub))
 levels(back$industry) <- gsub("[^a-zA-Z0-9]", "", levels(back$industry))
 levels(back$why_unemp) <- gsub("[^a-zA-Z0-9]", "", levels(back$why_unemp))
 levels(back$child_in_hh) <- gsub("[^a-zA-Z0-9]", "", levels(back$child_in_hh))
@@ -115,9 +101,9 @@ back <- droplevels(back)
 
 # delete variables with hardly any variation
 
-zero_var_track <- nearZeroVar(tracking, freqCut = 99.95/0.05, uniqueCut = 0.1, names = TRUE, allowParallel = T)
-tracking <- tracking[ , -which(names(tracking) %in% zero_var_track)]
-rm(zero_var_track)
+# zero_var_track <- nearZeroVar(tracking, freqCut = 99.95/0.05, uniqueCut = 0.1, names = TRUE, allowParallel = T)
+# tracking <- tracking[ , -which(names(tracking) %in% zero_var_track)]
+# rm(zero_var_track)
 
 # put datasets together
 
@@ -128,15 +114,15 @@ sum(is.na(X_back_track))
 X_back_track[is.na(X_back_track)] <- 0
 
 # Blocks of features (careful with column numbers)
-background  <- names(X_back_track[407:430])
-track_general <- names(X_back_track[2:162])
-track_fb_news <- names(X_back_track[c(163:174,341:374)])
-track_apps <- names(X_back_track[179:338])
-track_oeff_fake <- names(X_back_track[375:405])
 
-names(X_back_track)[431:ncol(X_back_track)] <- gsub("[^a-zA-Z0-9]", "", names(X_back_track)[431:ncol(X_back_track)])
+survey_demo  <- names(X_back_track[407:425])
+track_general <- names(X_back_track[c(2:162,175:178,378:379,385:386,389:390)])
+track_news_media <- names(X_back_track[c(163:174,339:377,380:384,387:388,391:395)])
+track_fake <- names(X_back_track[396:405])
+
+names(X_back_track)[426:ncol(X_back_track)] <- gsub("[^a-zA-Z0-9]", "", names(X_back_track)[426:ncol(X_back_track)])
 X_back_track <- X_back_track[, !duplicated(colnames(X_back_track))]
-track_domains <- names(X_back_track[431:ncol(X_back_track)])
+track_apps_domains <- names(X_back_track[c(179:338, 426:ncol(X_back_track))])
 
 # Attach Ys to X variables
 Y <- survey_w3[,c(1,ncol(survey_w3))]
@@ -189,12 +175,13 @@ X_back_track_test <- X_back_track[-trainIndex,]
 
 # Caret Setup
 
-fiveStats <- function(...) c(twoClassSummary(...),
-                             defaultSummary(...))
+evalStats <- function(...) c(twoClassSummary(...),
+                             defaultSummary(...),
+                             mnLogLoss(...))
 
 ctrl1  <- trainControl(method = "cv",
                        number = 10,
-                       summaryFunction = fiveStats,
+                       summaryFunction = evalStats,
                        classProbs = TRUE,
                        verboseIter = TRUE)
 
@@ -213,11 +200,11 @@ ctrl2  <- trainControl(method = "cv",
 # Models - Trees
 ##################################################################################
 
-# Undecided - track_fb_news
+# Undecided - track_news_media
 
 X_back_track_train_c <- X_back_track_train[!is.na(X_back_track_train$undecided),]
 
-model_u1 <- paste("undecided ~",paste(track_fb_news,collapse="+"))
+model_u1 <- paste("undecided ~",paste(track_news_media,collapse="+"))
 
 set.seed(543856)
 eval(parse(text=paste("tree_u1 <- rpart(",model_u1,",
@@ -231,9 +218,9 @@ printcp(tree_u1)
 party_tree_u1 <- as.party(tree_u1)
 plot(party_tree_u1, gp = gpar(fontsize = 8.5))
 
-# Undecided - track_apps
+# Undecided - track_apps_domains
 
-model_u2 <- paste("undecided ~",paste(track_apps,collapse="+"))
+model_u2 <- paste("undecided ~",paste(track_apps_domains,collapse="+"))
 
 set.seed(543856)
 eval(parse(text=paste("tree_u2 <- rpart(",model_u2,",
@@ -247,63 +234,29 @@ printcp(tree_u2)
 party_tree_u2 <- as.party(tree_u2)
 plot(party_tree_u2, gp = gpar(fontsize = 8.5))
 
-# Undecided - track_oeff_fake
-
-model_u3 <- paste("undecided ~",paste(track_oeff_fake,collapse="+"))
-
-set.seed(543856)
-eval(parse(text=paste("tree_u3 <- rpart(",model_u3,",
-                      data = X_back_track_train_c,
-                      control = rpart.control(minsplit = 10,
-                      minbucket = 3,
-                      cp = 0.001,
-                      maxdepth = 4))")))
-
-printcp(tree_u3)
-party_tree_u3 <- as.party(tree_u3)
-plot(party_tree_u3, gp = gpar(fontsize = 8.5))
-
-# Undecided - track_domains
-
-model_u4 <- paste("undecided ~",paste(track_domains,collapse="+"))
-
-set.seed(543856)
-eval(parse(text=paste("tree_u4 <- rpart(",model_u4,",
-                      data = X_back_track_train_c,
-                      control = rpart.control(minsplit = 10,
-                      minbucket = 3,
-                      cp = 0.001,
-                      maxdepth = 4))")))
-
-printcp(tree_u4)
-party_tree_u4 <- as.party(tree_u4)
-plot(party_tree_u4, gp = gpar(fontsize = 8.5))
-
-
 ##################################################################################
 # Models - XGBoost
 ##################################################################################
 
 # Undecided
 
-model_u1 <- paste("undecided ~",paste(background,collapse="+"))
-model_u2 <- paste(model_u1,paste("+"),paste(track_general,collapse="+"))
-model_u3 <- paste(model_u1,paste("+"),paste(track_fb_news,collapse="+"))
-model_u4 <- paste(model_u1,paste("+"),paste(track_apps,collapse="+"))
-model_u5 <- paste(model_u1,paste("+"),paste(track_oeff_fake,collapse="+"))
-model_u6 <- paste("undecided ~",paste(track_general,collapse="+"))
-model_u6 <- paste(model_u6,paste("+"),paste(track_fb_news,collapse="+"))
-model_u6 <- paste(model_u6,paste("+"),paste(track_apps,collapse="+"))
-model_u6 <- paste(model_u6,paste("+"),paste(track_oeff_fake,collapse="+"))
-model_u6 <- paste(model_u6,paste("+"),paste(track_domains,collapse="+"))
-model_u7 <- paste(model_u6,paste("+"),paste(background,collapse="+"))
+model_u1 <- paste("undecided ~", paste(survey_demo, collapse="+"))
+model_u2 <- paste(model_u1, paste("+"), paste(track_general, collapse="+"))
+model_u3 <- paste(model_u1, paste("+"), paste(track_news_media, collapse="+"))
+model_u4 <- paste(model_u1, paste("+"), paste(track_fake, collapse="+"))
+model_u5 <- paste(model_u1, paste("+"), paste(track_apps_domains, collapse="+"))
+model_u6 <- paste("undecided ~", paste(track_general, collapse="+"))
+model_u6 <- paste(model_u6, paste("+"), paste(track_news_media, collapse="+"))
+model_u6 <- paste(model_u6, paste("+"), paste(track_fake, collapse="+"))
+model_u6 <- paste(model_u6, paste("+"), paste(track_apps_domains, collapse="+"))
+model_u7 <- paste(model_u6, paste("+"), paste(survey_demo, collapse="+"))
 
 small <- ncol(model.matrix(eval(parse(text=model_u1)), X_back_track_train))
 med <- ncol(model.matrix(eval(parse(text=model_u2)), X_back_track_train))
-full <-  small + length(track_domains)
+full <-  small + length(track_apps_domains)
 
-xgb_grid <- expand.grid(max_depth = c(1, 2, 3, 5, 7),
-                        nrounds = c(500, 750, 1000, 1250, 1500),
+xgb_grid <- expand.grid(max_depth = c(1, 2, 3, 5, 7, 9),
+                        nrounds = c(500, 750, 1000, 1500, 2000),
                         eta = c(0.005, 0.01, 0.025),
                         min_child_weight = 5,
                         subsample = 0.7,
@@ -314,7 +267,7 @@ rf_grid <- expand.grid(mtry = c(round(sqrt(small)), round(log2(small)), round(sq
                        splitrule = c("gini", "extratrees"),
                        min.node.size = c(1, 5))
 
-# Undecided - background
+# Undecided - survey_demo
 
 set.seed(303493)
 eval(parse(text=paste("xgb_u1 <- train(",model_u1,",
@@ -322,7 +275,7 @@ eval(parse(text=paste("xgb_u1 <- train(",model_u1,",
                       method = 'xgbTree',
                       trControl = ctrl1,
                       tuneGrid = xgb_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       na.action = na.omit)")))
 
 xgb_u1
@@ -334,14 +287,14 @@ eval(parse(text=paste("rf_u1 <- train(",model_u1,",
                       method = 'ranger',
                       trControl = ctrl1,
                       tuneGrid = rf_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       importance = 'impurity',
                       na.action = na.omit)")))
 
 rf_u1
 plot(rf_u1)
 
-# Undecided - background + track_general
+# Undecided - survey_demo + track_general
 
 set.seed(303493)
 eval(parse(text=paste("xgb_u2 <- train(",model_u2,",
@@ -349,7 +302,7 @@ eval(parse(text=paste("xgb_u2 <- train(",model_u2,",
                       method = 'xgbTree',
                       trControl = ctrl1,
                       tuneGrid = xgb_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       na.action = na.omit)")))
 
 xgb_u2
@@ -361,14 +314,14 @@ eval(parse(text=paste("rf_u2 <- train(",model_u2,",
                       method = 'ranger',
                       trControl = ctrl1,
                       tuneGrid = rf_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       importance = 'impurity',
                       na.action = na.omit)")))
 
 rf_u2
 plot(rf_u2)
 
-# Undecided - background + track_fb_news
+# Undecided - survey_demo + track_news_media
 
 set.seed(303493)
 eval(parse(text=paste("xgb_u3 <- train(",model_u3,",
@@ -376,7 +329,7 @@ eval(parse(text=paste("xgb_u3 <- train(",model_u3,",
                       method = 'xgbTree',
                       trControl = ctrl1,
                       tuneGrid = xgb_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       na.action = na.omit)")))
 
 xgb_u3
@@ -388,14 +341,14 @@ eval(parse(text=paste("rf_u3 <- train(",model_u3,",
                       method = 'ranger',
                       trControl = ctrl1,
                       tuneGrid = rf_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       importance = 'impurity',
                       na.action = na.omit)")))
 
 rf_u3
 plot(rf_u3)
 
-# Undecided - background + track_apps
+# Undecided - survey_demo + track_fake
 
 set.seed(303493)
 eval(parse(text=paste("xgb_u4 <- train(",model_u4,",
@@ -403,7 +356,7 @@ eval(parse(text=paste("xgb_u4 <- train(",model_u4,",
                       method = 'xgbTree',
                       trControl = ctrl1,
                       tuneGrid = xgb_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       na.action = na.omit)")))
 
 xgb_u4
@@ -415,14 +368,14 @@ eval(parse(text=paste("rf_u4 <- train(",model_u4,",
                       method = 'ranger',
                       trControl = ctrl1,
                       tuneGrid = rf_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       importance = 'impurity',
                       na.action = na.omit)")))
 
 rf_u4
 plot(rf_u4)
 
-# Undecided - background + track_oeff_fake
+# Undecided - survey_demo + track_apps_domains
 
 set.seed(303493)
 eval(parse(text=paste("xgb_u5 <- train(",model_u5,",
@@ -430,7 +383,7 @@ eval(parse(text=paste("xgb_u5 <- train(",model_u5,",
                       method = 'xgbTree',
                       trControl = ctrl1,
                       tuneGrid = xgb_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       na.action = na.omit)")))
 
 xgb_u5
@@ -442,7 +395,7 @@ eval(parse(text=paste("rf_u5 <- train(",model_u5,",
                       method = 'ranger',
                       trControl = ctrl1,
                       tuneGrid = rf_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       importance = 'impurity',
                       na.action = na.omit)")))
 
@@ -457,7 +410,7 @@ eval(parse(text=paste("xgb_u6 <- train(",model_u6,",
                       method = 'xgbTree',
                       trControl = ctrl1,
                       tuneGrid = xgb_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       na.action = na.omit)")))
 
 xgb_u6
@@ -469,14 +422,14 @@ eval(parse(text=paste("rf_u6 <- train(",model_u6,",
                       method = 'ranger',
                       trControl = ctrl1,
                       tuneGrid = rf_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       importance = 'impurity',
                       na.action = na.omit)")))
 
 rf_u6
 plot(rf_u6)
 
-# Undecided - tracking full + background
+# Undecided - tracking data + survey_demo
 
 set.seed(303493)
 eval(parse(text=paste("xgb_u7 <- train(",model_u7,",
@@ -484,7 +437,7 @@ eval(parse(text=paste("xgb_u7 <- train(",model_u7,",
                       method = 'xgbTree',
                       trControl = ctrl1,
                       tuneGrid = xgb_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       na.action = na.omit)")))
 
 xgb_u7
@@ -496,30 +449,12 @@ eval(parse(text=paste("rf_u7 <- train(",model_u7,",
                       method = 'ranger',
                       trControl = ctrl1,
                       tuneGrid = rf_grid,
-                      metric = 'ROC',
+                      metric = 'logLoss',
                       importance = 'impurity',
                       na.action = na.omit)")))
 
 rf_u7
 plot(rf_u7)
-
-# Undecided - tracking full + background w. feature selection
-
-#set.seed(303493)
-#eval(parse(text=paste("xgb_v8 <- sbf(",model_v7,",
-#            data = X_back_track_train,
-#            method = 'xgbTree',
-#            trControl = ctrl1,
-#            sbfControl = sbf_ctrl,
-#            tuneGrid = xgb_grid,
-#            metric = 'ROC',
-#            na.action = na.omit)")))
-
-#xgb_v8
-#xgb_v8$fit
-#plot(xgb_v8$fit)
-#plot(varImp(xgb_v8$fit), top = 10)
-
 
 ##################################################################################
 # Variable Importance
