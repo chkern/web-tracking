@@ -4,7 +4,7 @@ p_load(tidyverse, foreign, haven, data.table, dummies, urltools, parallel, strin
 #devtools::install_github("jayjacobs/tldextract")
 #library(tldextract)
 
-setwd("Z:\\Respondi\\")
+setwd("Z:\\Respondi\\RESPONDI_w3\\")
 
 
 web_pageviews <- readRDS(".\\original daten\\web_pageviews.rds")
@@ -29,22 +29,9 @@ df5 <- web_pageviews[12000001:15000000,]
 saveRDS(df5, file = ".\\data_pieces\\web_pageviews5.rds")
 rm(df5)
 
-df6 <- web_pageviews[15000001:18000000,]
+df6 <- web_pageviews[15000001:16559164,]
 saveRDS(df6, file = ".\\data_pieces\\web_pageviews6.rds")
 rm(df6)
-
-df7 <- web_pageviews[18000001:21000000,]
-saveRDS(df7, file = ".\\data_pieces\\web_pageviews7.rds")
-rm(df7)
-
-df8 <- web_pageviews[21000001:24000000,]
-saveRDS(df8, file = ".\\data_pieces\\web_pageviews8.rds")
-rm(df8)
-
-df9 <- web_pageviews[24000001:25968763,]
-saveRDS(df9, file = ".\\data_pieces\\web_pageviews9.rds")
-rm(df9, web_pageviews)
-
 ###################################################################################
 web_pageviews <- readRDS(".\\data_pieces\\web_pageviews1.rds")
 
@@ -186,73 +173,6 @@ rm(suffix_df)
 saveRDS(web_pageviews, file = ".\\data_pieces\\web_pageviews6_prep.rds")
 rm(web_pageviews)
 #####################################################################################
-web_pageviews <- readRDS(".\\data_pieces\\web_pageviews7.rds")
-
-#web_pageviews$domain <- str_extract(web_pageviews$url, "(.*?)(\\/|$)")
-#web_pageviews$domain <- gsub("/","",web_pageviews$domain)
-#suffix_df <- suffix_extract(web_pageviews$domain, suffix_refresh())
-
-web_pageviews$DECODED <-url_decode(web_pageviews$url)
-web_pageviews$domain <- str_extract(web_pageviews$url, "(.*?)(\\/|$)")
-web_pageviews$domain <- gsub("/","",web_pageviews$domain)
-suffix_df <- suffix_extract(web_pageviews$domain, suffix_refresh())
-
-web_pageviews$url <- NULL
-web_pageviews$DECODED <- NULL
-web_pageviews$domain <- NULL
-web_pageviews$host <- suffix_df$host
-web_pageviews$subdomain <- suffix_df$subdomain
-web_pageviews$domain <- suffix_df$domain
-web_pageviews$suffix <- suffix_df$suffix
-rm(suffix_df)
-
-saveRDS(web_pageviews, file = ".\\data_pieces\\web_pageviews7_prep.rds")
-rm(web_pageviews)
-#####################################################################################
-web_pageviews <- readRDS(".\\data_pieces\\web_pageviews8.rds")
-
-#web_pageviews$domain <- str_extract(web_pageviews$url, "(.*?)(\\/|$)")
-#web_pageviews$domain <- gsub("/","",web_pageviews$domain)
-#suffix_df <- suffix_extract(web_pageviews$domain, suffix_refresh())
-
-web_pageviews$DECODED <-url_decode(web_pageviews$url)
-web_pageviews$domain <- str_extract(web_pageviews$url, "(.*?)(\\/|$)")
-web_pageviews$domain <- gsub("/","",web_pageviews$domain)
-suffix_df <- suffix_extract(web_pageviews$domain, suffix_refresh())
-
-web_pageviews$url <- NULL
-web_pageviews$DECODED <- NULL
-web_pageviews$domain <- NULL
-web_pageviews$host <- suffix_df$host
-web_pageviews$subdomain <- suffix_df$subdomain
-web_pageviews$domain <- suffix_df$domain
-web_pageviews$suffix <- suffix_df$suffix
-rm(suffix_df)
-
-saveRDS(web_pageviews, file = ".\\data_pieces\\web_pageviews8_prep.rds")
-rm(web_pageviews)
-#####################################################################################
-web_pageviews <- readRDS(".\\data_pieces\\web_pageviews9.rds")
-
-#web_pageviews$domain <- str_extract(web_pageviews$url, "(.*?)(\\/|$)")
-#web_pageviews$domain <- gsub("/","",web_pageviews$domain)
-#suffix_df <- suffix_extract(web_pageviews$domain, suffix_refresh())
-
-web_pageviews$DECODED <-url_decode(web_pageviews$url)
-web_pageviews$domain <- str_extract(web_pageviews$url, "(.*?)(\\/|$)")
-web_pageviews$domain <- gsub("/","",web_pageviews$domain)
-suffix_df <- suffix_extract(web_pageviews$domain, suffix_refresh())
-
-web_pageviews$url <- NULL
-web_pageviews$DECODED <- NULL
-web_pageviews$domain <- NULL
-web_pageviews$host <- suffix_df$host
-web_pageviews$subdomain <- suffix_df$subdomain
-web_pageviews$domain <- suffix_df$domain
-web_pageviews$suffix <- suffix_df$suffix
-rm(suffix_df)
-
-saveRDS(web_pageviews, file = ".\\data_pieces\\web_pageviews9_prep.rds")
 rm(web_pageviews)
 #####################################################################################
 df1 <- readRDS(file = ".\\data_pieces\\web_pageviews1_prep.rds")
@@ -261,12 +181,9 @@ df3 <- readRDS(file = ".\\data_pieces\\web_pageviews3_prep.rds")
 df4 <- readRDS(file = ".\\data_pieces\\web_pageviews4_prep.rds")
 df5 <- readRDS(file = ".\\data_pieces\\web_pageviews5_prep.rds")
 df6 <- readRDS(file = ".\\data_pieces\\web_pageviews6_prep.rds")
-df7 <- readRDS(file = ".\\data_pieces\\web_pageviews7_prep.rds")
-df8 <- readRDS(file = ".\\data_pieces\\web_pageviews8_prep.rds")
-df9 <- readRDS(file = ".\\data_pieces\\web_pageviews9_prep.rds")
 
-web_pageviews <- rbind(df1, df2, df3, df4, df5, df6, df7, df8, df9)
-rm(df1, df2, df3, df4, df5, df6, df7, df8, df9)
+web_pageviews <- rbind(df1, df2, df3, df4, df5, df6)
+rm(df1, df2, df3, df4, df5, df6)
 web_pageviews$domain <- paste(web_pageviews$domain, web_pageviews$suffix, sep=".")
 
 saveRDS(web_pageviews, file = ".\\data\\web_pageviews_prep.rds")

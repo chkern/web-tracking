@@ -1,103 +1,68 @@
 library(pacman)
 p_load(tidyverse, foreign, haven, data.table, dummies, urltools, parallel, stringr)
 
-setwd("\\\\nas.uni-mannheim.de\\uni-shares\\swnsswml\\Respondi\\")
+setwd("Y:\\Respondi\\RESPONDI_w3\\")
 
 #source(".\\code\\3_3_3_1_prep_web_pageviews.R")
 
 ###############################################################################s
 ###############################################################################
 web_pageviews <- readRDS(file = ".\\data\\web_pageviews_prep.rds")
-n_domains_user <- web_pageviews %>%
-  group_by(panelist_id) %>%
-  summarise(
-    dom_tot_p_n = n(),
-    dom_tot_p_dur = sum(active_seconds, na.rm = TRUE)
-  )
-#web_pageviews <- merge(web_pageviews, n_domains_user, by="panelist_id")
 
-#limit to 20 most used domains
+#limit to most used domains (at least 60sec/1minute spent overall in data and 80 visits)
 SITES20 <- web_pageviews %>%
-  group_by(panelist_id, domain) %>%
+  group_by(domain) %>%
   summarise(count_visits = n(),
-            time_spent = sum(active_seconds, na.rm=TRUE)
-            )
-SITES20 <- merge(n_domains_user, SITES20, by=c("panelist_id"))
-#share of visits and duration per user per domain
-X2 <- transmute(SITES20,
-                dom_rel_p_n = count_visits/dom_tot_p_n,
-                dom_rel_p_dur = time_spent/dom_tot_p_dur
-    )
-SITES20 <- cbind(SITES20,X2)
-X2 <- web_pageviews %>% 
+            time_spent = sum(active_seconds, na.rm=TRUE) ) %>%
+  arrange(time_spent,count_visits) %>%
+  filter(time_spent >= 60 & count_visits >= 80) %>% 
+  select(domain)
+
+SITES20$MOSTUSED <- 1 
+SITES20 <- merge(SITES20, web_pageviews, by="domain", all=TRUE)
+
+SITES202 <- SITES20 %>% 
+  filter(MOSTUSED==1) %>% 
+  ungroup() %>% 
   group_by(panelist_id, domain) %>% 
-  filter(row_number() == 1) %>%
-  select(panelist_id, domain, starts_with("dom_rel"))
-SITES20 <- merge(SITES20, X2, by = c("panelist_id", "domain"))
-rm(X2)
+  summarise(count_visits = n(),
+            time_spent = sum(active_seconds, na.rm=TRUE) ) 
 
-SITES20$panelist_id <- as.numeric(SITES20$panelist_id)
+rm(web_pageviews, SITES20)
+SITES_1 <- SITES202[1:49709,]
+SITES_2 <- SITES202[49710:99938,]
+SITES_3 <- SITES202[99939:149898,]
+SITES_4 <- SITES202[149899:199959,]
+SITES_5 <- SITES202[199960:length(SITES202$panelist_id),]
 
-SITES20 <- SITES20 %>%
-  arrange(-(panelist_id), -(time_spent),-(count_visits) )%>%
-  ungroup() %>%
-  group_by(panelist_id) %>%
-  arrange(panelist_id, -(time_spent),-(count_visits) ) %>%
-  filter(row_number() >= 1, row_number() <= 5)
-#how many different domains remain?
-length(unique(SITES20$domain)) #8k
-
-SITES20_count <- SITES20
-SITES20_count <- SITES20_count %>%
-  select(panelist_id, domain, count_visits)
-SITES20_count <- spread(SITES20_count, domain, count_visits)
-
-SITES20_time <- SITES20
-SITES20_time <- SITES20_time %>%
+SITES_1 <- SITES_1 %>%
   select(panelist_id, domain, time_spent)
-SITES20_time <- spread(SITES20_time, domain, time_spent)
+SITES_2 <- SITES_2 %>%
+  select(panelist_id, domain, time_spent)
+SITES_3 <- SITES_3 %>%
+  select(panelist_id, domain, time_spent)
+SITES_4 <- SITES_4 %>%
+  select(panelist_id, domain, time_spent)
+SITES_5 <- SITES_5 %>%
+  select(panelist_id, domain, time_spent)
 
-SITES20_d_rel_n <- SITES20
-SITES20_d_rel_n <- SITES20_d_rel_n %>%
-  select(panelist_id, domain, dom_rel_p_n)
-SITES20_d_rel_n <- spread(SITES20_d_rel_n, domain, dom_rel_p_n)
+SITES20_1 <- spread(SITES_1, domain, time_spent)
+SITES20_2 <- spread(SITES_2, domain, time_spent)
+SITES20_3 <- spread(SITES_3, domain, time_spent)
+SITES20_4 <- spread(SITES_4, domain, time_spent)
+SITES20_5 <- spread(SITES_5, domain, time_spent)
 
-SITES20_d_rel_dur <- SITES20
-SITES20_d_rel_dur <- SITES20_d_rel_dur %>%
-  select(panelist_id, domain, dom_rel_p_dur)
-SITES20_d_rel_dur <- spread(SITES20_d_rel_dur, domain, dom_rel_p_dur)
+SITES_20 <- bind_rows(SITES20_1,SITES20_2,SITES20_3,SITES20_4,SITES20_5 )
+rm(SITES_1,SITES_2 ,SITES_3,SITES_4,SITES_5,SITES20_1,SITES20_2,SITES20_3,SITES20_4,SITES20_5)
 
-CNT_names <- names(SITES20_count)
-TM_names <- names(SITES20_time)
-DN_names <- names(SITES20_d_rel_n)
-DD_names <- names(SITES20_d_rel_dur)
+SITES_20[is.na(SITES_20)] <- 0
+rm(SITES202)
 
-CNT_names <- paste0('CNT_', CNT_names)
-TM_names <- paste0('TM_', TM_names)
-DN_names <- paste0('DN_', DN_names)
-DD_names <- paste0('DD_', DD_names)
-
-SITES20_count <- set_names(SITES20_count, nm = CNT_names)
-SITES20_time <- set_names(SITES20_time, nm = TM_names)
-SITES20_d_rel_n <- set_names(SITES20_d_rel_n, nm = DN_names)
-SITES20_d_rel_dur <- set_names(SITES20_d_rel_dur, nm = DD_names)
-
-SITES20_count <- rename(SITES20_count, panelist_id = CNT_panelist_id)
-SITES20_time <- rename(SITES20_time, panelist_id = TM_panelist_id)
-SITES20_d_rel_n <- rename(SITES20_d_rel_n, panelist_id = DN_panelist_id)
-SITES20_d_rel_dur <- rename(SITES20_d_rel_dur, panelist_id = DD_panelist_id)
-
-rm(CNT_names, TM_names, DN_names, DD_names)
-SITES20 <- merge(SITES20_count, SITES20_time, by="panelist_id")
-SITES20 <- merge(SITES20, SITES20_d_rel_n, by="panelist_id")
-SITES20 <- merge(SITES20, SITES20_d_rel_dur, by="panelist_id")
-
-rm(SITES20_count, SITES20_time,SITES20_d_rel_n,SITES20_d_rel_dur)
-
-SITES20[is.na(SITES20)] <- 0
-
+saveRDS(SITES_20, file = ".\\data\\wep_pageviews_prepared.RDS")
+rm(SITES_20)
 
 ####################################################################################
+web_pageviews <- readRDS(file = ".\\data\\web_pageviews_prep.rds")
 
 web_pageviews$hour <- as.integer(substr(web_pageviews$used_at, 12, 13))
 
@@ -173,5 +138,4 @@ rm(web_pageviews)
 
 saveRDS(n_domains_user, file = ".\\data\\wep_pageviews_prepared_small.rds")
 
-saveRDS(SITES20, file = ".\\data\\wep_pageviews_prepared.RDS")
 

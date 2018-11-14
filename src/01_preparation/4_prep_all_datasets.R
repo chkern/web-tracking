@@ -1,7 +1,7 @@
 library(pacman)
 p_load(tidyverse, foreign, haven, data.table, dummies)
 
-setwd("Z:\\Respondi\\")
+setwd("Y:\\Respondi\\RESPONDI_w3\\")  
 
 wp_prep_sm <- readRDS(file = ".\\data\\wep_pageviews_prepared_small.RDS")
 mv_prep_sm <- readRDS(file = ".\\data\\mobile_views_prepared_small.RDS")
@@ -24,9 +24,6 @@ data_prep_sm <- merge(mv_prep_sm, wp_prep_sm, by="panelist_id", all = TRUE)
 rm(mv_prep_sm, wp_prep_sm)
 
 data_prep_sm[is.na(data_prep_sm)] <- 0
-
-survey_data <- load(".\\survey_daten\\survey_data_all.RData")
-rm(survey_data)
 
 wp_prep <- readRDS(file = ".\\data\\wep_pageviews_prepared.RDS")
 mv_prep <- readRDS(file = ".\\data\\mobile_views_prepared.RDS")
@@ -51,12 +48,21 @@ rm(mv_prep, wp_prep)
 data_prep[is.na(data_prep)] <- 0
 
 
-saveRDS(data_prep, file = ".\\data\\data_prep_final.rds")
+# drop one nonsense observation
+data_prep_sm <- filter(data_prep_sm, panelist_id!=0)
+# drop some duplicate variables
+data_prep_sm <- select(data_prep_sm, -c(mv_kind_tab_rel_dur, mv_kind_tab_rel_n, mv_kind_totdur_p_user, mv_kind_totn_p,
+                                        mv_utype_wo_rel_dur, mv_utype_wo_rel_n, mv_utype_totdur_p_user, mv_utype_totn_p,
+                                        mv_con_totdur_p_user, mv_con_totn_p, mv_scheme_tot_n, mv_scheme_tot_dur))
 
-rm(data_prep)
+
+saveRDS(data_prep, file = ".\\data\\apps_and_sites_final.rds")
+saveRDS(data_prep_sm, file = ".\\data\\general_usage_info_final.rds")
+
+rm(data_prep,data_prep_sm)
 
 #load apps classified and extend to all people
-all_Rs <- readRDS(file = ".\\data\\data_prep_final_small.rds")
+all_Rs <- readRDS(file = ".\\data\\general_usage_info_final.rds")
 all_Rs <- select(all_Rs, panelist_id)
 all_Rs$IDTHING <- 1
 
@@ -114,54 +120,12 @@ OER_data <- merge(OER_data, all_Rs, by = "panelist_id", all = TRUE)
 OER_data[is.na(OER_data)] <- 0
 OER_data$IDTHING <- NULL
 
+OER_data <- OER_data %>% 
+  select(-c(mv_app_tot_d, mv_app_tot_n,mv_dom_tot_n,mv_dom_tot_d,wp_tot_d,wp_tot_n,
+            mv_app_oer_app,wp_oeff_recht,mv_dom_oeff_recht))
+
 saveRDS(OER_data, file = ".\\data\\oeffrecht_final.rds")
 
 
-data_small <- merge(data_prep_sm, apps_classified, all=TRUE)
-data_small <- merge(data_small, news_media, all=TRUE)
-data_small <- merge(data_small, OER_data, all=TRUE)
+FAKE <- readRDS(file = ".\\data\\fake_final.rds")
 
-fake_wp <- readRDS(file = ".\\data\\fake_wp_final.rds")
-
-fake_mv <- readRDS(file = ".\\data\\fake_mv_final.rds")
-
-FAKE <- merge(fake_wp, all_Rs, by = "panelist_id", all = TRUE)
-FAKE <- merge(fake_mv, FAKE, by = "panelist_id", all = TRUE)
-
-FAKE[is.na(FAKE)] <- 0
-
-data_small <- merge(data_small, FAKE, all=TRUE)
-
-
-rm(all_Rs, apps_classified, data_prep_sm, news_media, OER_data, fake_mv, fake_wp, FAKE)
-
-# data_small <- data_small[-c(1),]
-
-# drop one nonsense observation
-data_small <- filter(data_small, panelist_id!=0)
-# drop some duplicate variables
-data_small <- select(data_small, -c(mv_kind_tab_rel_dur, mv_kind_tab_rel_n, mv_kind_totdur_p_user, mv_kind_totn_p,
-                                    mv_utype_wo_rel_dur, mv_utype_wo_rel_n, mv_utype_totdur_p_user, mv_utype_totn_p,
-                                    mv_con_totdur_p_user, mv_con_totn_p, mv_scheme_tot_n, mv_scheme_tot_dur))
-
-saveRDS(data_small, file = ".\\data\\data_prep_final_small.rds")
-
-
-# df1 <- readRDS(file = ".\\data\\data_prep_final_small.rds")
-
-# survey_w1 <- read_dta(file = ".\\survey_daten\\survey_data_w1.dta")
-# survey_w1$sinus_mil <- as_factor(survey_w1$sinus_mil, labels = "values")
-# survey_w1$sinus_mil <- droplevels(survey_w1$sinus_mil)
-# summary(survey_w1$sinus_mil)
-
-# survey_w1$sinus_mil <- dplyr::revalue(survey_w1$sinus_mil, c("Sozialökologisches Milieu (S?-K)" = "Sozialoekologisches Milieu (SOEK)",
-#                                                       "Bürgerliche Mitte (B?oM)" = "Buergerliche Mitte (BUEM)",
-#                                                       "Prekäres Milieu (PRE)" = "Prekaeres Milieu (PRE)"))
-
-# survey_w1$panelist_id %<>% as.character()
-# y <- select(survey_w1, panelist_id, sinus_mil)
-
-# df1 <- merge(y, df1, by="panelist_id")
-
-
-# write.foreign(as.data.frame(df1), ".\\tracking_for_sinus.txt",  ".\\tracking_for_sinus.sps", package = "SPSS")

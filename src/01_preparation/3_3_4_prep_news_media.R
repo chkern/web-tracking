@@ -5,7 +5,7 @@ p_load(tidyverse, foreign, haven, data.table, dummies, caret, magrittr, randomFo
 ##Some information and descriptive stuff regarding Sinus Milieus
 ##################################################################################
 
-setwd("\\\\nas.uni-mannheim.de\\uni-shares\\swnsswml\\Respondi\\")
+setwd("Y:\\Respondi\\RESPONDI_w3\\")
 
 media_appnames <- read.csv(file=".\\media_landscape\\50mostusednewssites_apps_clean.csv", header=TRUE, sep = ";")
 media_appnames$X <- NULL
@@ -224,7 +224,7 @@ MV_apps$facebook_app <- ifelse(MV_apps$app_n=="Facebook" |
                                  MV_apps$app_n=="Facebook Lite" |
                                  MV_apps$app_n=="Facebook Groups" |
                                  MV_apps$app_n=="Facebook Pages Manager",
-                                    yes = 1, no = 0)
+                               yes = 1, no = 0)
 
 #################APP info
 a_totals <- MV_apps %>%
@@ -271,15 +271,6 @@ media_usage[is.na(media_usage)] <- 0
 
 media_usage <- select(media_usage, -c(facebook_app, news_app))
 
-media_usage <- mutate(media_usage,
-                      fb_news_tot_n = fb_tot_n + news_tot_n,
-                      fb_news_tot_d = fb_tot_d + news_tot_d,
-                      fb_news_rel_n = fb_tot_n / fb_news_tot_n,
-                      fb_news_rel_d = fb_tot_d / fb_news_tot_d
-)  
-media_usage$fb_news_rel_n[is.na(media_usage$fb_news_rel_n)] <- 0.5
-media_usage$fb_news_rel_d[is.na(media_usage$fb_news_rel_d)] <- 0.5
-
 media_usage$tot_d <- NULL
 media_usage$tot_n <- NULL
 
@@ -291,7 +282,6 @@ media_usage <- set_names(media_usage, nm = app_names)
 
 media_usage <- rename(media_usage, panelist_id = app_panelist_id)
 rm(app_names, MV_apps)
-
 
 saveRDS(media_usage, file = "./data/mv_app_news_media_final.RDS")
 
@@ -379,15 +369,6 @@ media_usage[is.na(media_usage)] <- 0
 
 media_usage <- select(media_usage, -c(facebook_site, news_media))
 
-media_usage <- mutate(media_usage,
-                      fb_news_tot_n = fb_tot_n + news_tot_n,
-                      fb_news_tot_d = fb_tot_d + news_tot_d,
-                      fb_news_rel_n = fb_tot_n / fb_news_tot_n,
-                      fb_news_rel_d = fb_tot_d / fb_news_tot_d
-)  
-media_usage$fb_news_rel_n[is.na(media_usage$fb_news_rel_n)] <- 0.5
-media_usage$fb_news_rel_d[is.na(media_usage$fb_news_rel_d)] <- 0.5
-
 media_usage$tot_d <- NULL
 media_usage$tot_n <- NULL
 
@@ -460,15 +441,6 @@ media_usage <- merge(media_usage, d_media_share2, by=c("panelist_id", "tot_n", "
 media_usage[is.na(media_usage)] <- 0
 
 media_usage <- select(media_usage, -c(facebook, news_media))
-
-media_usage <- mutate(media_usage,
-                      fb_news_tot_n = fb_tot_n + news_tot_n,
-                      fb_news_tot_d = fb_tot_d + news_tot_d,
-                      fb_news_rel_n = fb_tot_n / fb_news_tot_n,
-                      fb_news_rel_d = fb_tot_d / fb_news_tot_d
-)  
-media_usage$fb_news_rel_n[is.na(media_usage$fb_news_rel_n)] <- 0.5
-media_usage$fb_news_rel_d[is.na(media_usage$fb_news_rel_d)] <- 0.5
 
 media_usage$tot_d <- NULL
 media_usage$tot_n <- NULL

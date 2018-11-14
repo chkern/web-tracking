@@ -1,6 +1,6 @@
 library(pacman)
 p_load(tidyverse, foreign, haven, data.table, dummies)
-setwd("Z:\\Respondi\\")
+setwd("Y:\\Respondi\\RESPONDI_w3\\")  
 
 mobile_views <- readRDS(file = ".\\original daten\\mobile_views.rds")
 
@@ -243,7 +243,7 @@ saveRDS(Connection2, file = "./data_pieces/mob_v_connection.RDS")
 rm(Connection, Connection2)
 ##########################################################################
 #How long Connection type X used? and how often?
-  #Data has up to three obs per person. We want one
+#Data has up to three obs per person. We want one
 #Total duration per connection
 duration <- mobile_views %>%
   group_by(panelist_id, connection) %>%
@@ -267,7 +267,7 @@ duration3 <- mobile_views %>%
   summarise(
     con_totdur_p_user = sum(duration, na.rm = TRUE),
     con_totn_p = n()
-    )
+  )
 #merge to dataset with connection specific duration and count
 duration <- merge(MYDUMMIES, duration3, by="panelist_id")
 rm(MYDUMMIES)
@@ -288,7 +288,7 @@ duration_wifi <- rename(duration_wifi,
                         con_wifi_n = con_n_p,
                         con_wifi_rel_n= con_rel_n,
                         con_wifi_tot_n = con_totn_p
-                        )
+)
 duration_wifi <- select(duration_wifi, -(con_wifi_tot_n))
 duration_wifi <- select(duration_wifi, -(con_wifi_tot_dur))
 
@@ -296,13 +296,13 @@ duration_wifi <- select(duration_wifi, -(con_wifi_tot_dur))
 duration_cellular <- filter(duration2, connection_cellular==1)
 duration_cellular <- select(duration_cellular, -(starts_with("connection")))
 duration_cellular <- rename(duration_cellular,
-                        con_cell_dur = con_dur_p,
-                        con_cell_rel_dur = con_rel_dur,
-                        con_cell_tot_dur = con_totdur_p_user,
-                        con_cell_n = con_n_p,
-                        con_cell_rel_n= con_rel_n,
-                        con_cell_tot_n = con_totn_p
-                        )
+                            con_cell_dur = con_dur_p,
+                            con_cell_rel_dur = con_rel_dur,
+                            con_cell_tot_dur = con_totdur_p_user,
+                            con_cell_n = con_n_p,
+                            con_cell_rel_n= con_rel_n,
+                            con_cell_tot_n = con_totn_p
+)
 duration_cellular <- select(duration_cellular, -(con_cell_tot_n))
 duration_cellular <- select(duration_cellular, -(con_cell_tot_dur))
 
@@ -310,13 +310,13 @@ duration_cellular <- select(duration_cellular, -(con_cell_tot_dur))
 duration_unknown <- filter(duration2, connection_unknown==1)
 duration_unknown <- select(duration_unknown, -(starts_with("connection")))
 duration_unknown <- rename(duration_unknown,
-                        con_unknown_dur = con_dur_p,
-                        con_unknown_rel_dur = con_rel_dur,
-                        con_unknown_tot_dur = con_totdur_p_user,
-                        con_unknown_n = con_n_p,
-                        con_unknown_rel_n= con_rel_n,
-                        con_unknown_tot_n = con_totn_p
-                        )
+                           con_unknown_dur = con_dur_p,
+                           con_unknown_rel_dur = con_rel_dur,
+                           con_unknown_tot_dur = con_totdur_p_user,
+                           con_unknown_n = con_n_p,
+                           con_unknown_rel_n= con_rel_n,
+                           con_unknown_tot_n = con_totn_p
+)
 duration_unknown <- select(duration_unknown, -(con_unknown_tot_n))
 duration_unknown <- select(duration_unknown, -(con_unknown_tot_dur))
 
@@ -369,7 +369,7 @@ scheme_http <- filter(scheme, scheme=="http") %>%
   mutate(
     http_rel_n = scheme_n_p/scheme_tot_n,
     http_rel_dur = scheme_dur_p/scheme_tot_dur
-    ) %>%
+  ) %>%
   rename(
     http_n = scheme_n_p,
     http_dur = scheme_dur_p
@@ -400,7 +400,7 @@ scheme_other <- filter(scheme, !(scheme=="https" | scheme=="http")) %>%
     other_n = scheme_n_p,
     other_dur = scheme_dur_p
   )
-  
+
 
 scheme <- merge(scheme_http , scheme_https , by = "panelist_id", all = TRUE)
 scheme <- merge(scheme , scheme_other , by = "panelist_id", all = TRUE)
@@ -440,8 +440,6 @@ Version3 <- MYDUMMIES %>%
     v_10.4.0 = max(device_version_10.4.0),
     v_10.9.0 = max(device_version_10.9.0),
     v_11.0.0 = max(device_version_11.0.0),
-    v_11.0.2 = max(device_version_11.0.2),
-    v_11.0.3 = max(device_version_11.0.3),
     v_2.3.5 = max(device_version_2.3.5),
     v_4.0.3 = max(device_version_4.0.3),
     v_4.0.4 = max(device_version_4.0.4),
@@ -468,7 +466,7 @@ Version3 <- MYDUMMIES %>%
 rm(version,MYDUMMIES)
 
 #user has more than one device?
-Version3$v_upgraded <- rowSums( Version3[,2:39] )
+Version3$v_upgraded <- rowSums( Version3[,2:37] )
 table(Version3$v_upgraded)
 #aggregate to individual level
 
@@ -551,7 +549,6 @@ Manufacturer3 <- MYDUMMIES %>%
     dev_Prestigio = max(device_manufacturer__Prestigio),
     dev_rockchip = max(device_manufacturer__rockchip),
     dev_samsung = max(device_manufacturer__samsung),
-    dev_SHIFT4.2 = max(device_manufacturer__SHIFT4.2),
     dev_SHIFT5.2 = max(device_manufacturer__SHIFT5.2),
     dev_SISWOO = max(device_manufacturer__SISWOO),
     dev_Sony = max(device_manufacturer__Sony),
@@ -567,7 +564,6 @@ Manufacturer3 <- MYDUMMIES %>%
     dev_ulefone = max(device_manufacturer__ulefone),
     dev_UMI = max(device_manufacturer__UMI),
     dev_UMIDIGI = max(device_manufacturer__UMIDIGI),
-    dev_Vodafone = max(device_manufacturer__Vodafone),
     dev_WIKO = max(device_manufacturer__WIKO),
     dev_Wileyfox = max(device_manufacturer__Wileyfox),
     dev_Xiaomi = max(device_manufacturer__Xiaomi),
@@ -575,9 +571,8 @@ Manufacturer3 <- MYDUMMIES %>%
     dev_ZTE = max(device_manufacturer__ZTE)
   )
 rm(Manufacturer,MYDUMMIES)
-
 #user has more than one device?
-Manufacturer3$num_dev <- rowSums( Manufacturer3[,2:73] )
+Manufacturer3$num_dev <- rowSums( Manufacturer3[,2:71] )
 table(Manufacturer3$num_dev)
 
 #mobile_views <- merge(mobile_views,Manufacturer3, by = "panelist_id")
@@ -587,7 +582,7 @@ rm(Manufacturer3)
 #########################################################################
 mobile_views <- readRDS(file = "./original daten/mobile_views.rds")
 
-topappsclass <- read.csv(file = "./data/topappsclass_clean.csv", header = TRUE)
+topappsclass <- read.csv(file = "./data/topappsclass_clean.csv", header = TRUE, sep = ";")
 topappsclass$X <- NULL
 
 topappsclass <- rename(topappsclass, app_n = App)
@@ -613,8 +608,8 @@ totals <- APPS_classified %>%
     tot_d = sum(duration, na.rm = TRUE))
 
 #create category for not classified apps
-levels(APPS_classified$apps_clfied) <- c(levels(APPS_classified$apps_clfied),"not classified")
-APPS_classified$apps_clfied[is.na(APPS_classified$apps_clfied)]  <- "not classified"
+levels(APPS_classified$apps_clfied) <- c(levels(APPS_classified$apps_clfied),"not_classified")
+APPS_classified$apps_clfied[is.na(APPS_classified$apps_clfied)]  <- "not_classified"
 summary(APPS_classified$apps_clfied)
 
 APPS_class_2 <- APPS_classified %>% 
@@ -711,95 +706,44 @@ rm(n_domains_user)
 #############################
 #dom_tot_p_n: how many different domains visited by this user? constant within user
 #dom_tot_p_n: how much time did this user spent online? constant within user
-
-
-#limit to 20 most used domains
 SITES20 <- DOMAINS %>%
-  group_by(panelist_id, domain) %>%
+  group_by(domain) %>%
   summarise(count_visits = n(),
-            time_spent = sum(duration, na.rm=TRUE))
-SITES20 <- merge(DOMAINS, SITES20, by=c("panelist_id", "domain"))
+            time_spent = sum(duration, na.rm=TRUE) ) %>%
+  arrange(time_spent,count_visits) %>%
+  filter(time_spent >= 60 & count_visits >= 80) %>% 
+  select(domain)
 
-#share of visits and duration per user per domain
-X2 <- transmute(SITES20,
-                dom_rel_p_n = count_visits/dom_tot_p_n,
-                dom_rel_p_dur = time_spent/dom_tot_p_dur)
-SITES20 <- cbind(SITES20,X2)
-#X2 <- mobile_views %>% 
-#  group_by(panelist_id, domain) %>% 
-#  filter(row_number() == 1) %>%
-#  select(panelist_id, domain, starts_with("dom_rel"))
-#SITES20 <- merge(SITES20, X2, by = c("panelist_id", "domain"))
+SITES20$MOSTUSED <- 1 
+SITES20 <- merge(SITES20, DOMAINS, by="domain", all=TRUE)
 
-rm(X2)
+SITES202 <- SITES20 %>% 
+  filter(MOSTUSED==1) %>% 
+  ungroup() %>% 
+  group_by(panelist_id, domain) %>% 
+  summarise(count_visits = n(),
+            time_spent = sum(duration, na.rm=TRUE) ) 
 
-SITES20 <- SITES20 %>%
-  group_by(panelist_id, domain) %>%
-  filter(row_number()==1)
-
-SITES20 <- SITES20 %>%
-  arrange(-(panelist_id), -(time_spent),-(count_visits) )%>%
-  ungroup() %>%
-  group_by(panelist_id) %>%
-  arrange(panelist_id, -(time_spent),-(count_visits) ) %>%
-  filter(row_number() >= 1, row_number() <= 5) 
-#how many different domains remain?
-length(unique(SITES20$domain)) #8k
-
-
-SITES20_count <- SITES20
-SITES20_count <- SITES20_count %>%
-  select(panelist_id, domain, count_visits)
-SITES20_count <- spread(SITES20_count, domain, count_visits)
-
-SITES20_time <- SITES20
-SITES20_time <- SITES20_time %>%
-  select(panelist_id, domain, time_spent)
-SITES20_time <- spread(SITES20_time, domain, time_spent)
-
-SITES20_d_rel_n <- SITES20
-SITES20_d_rel_n <- SITES20_d_rel_n %>%
-  select(panelist_id, domain, dom_rel_p_n)
-SITES20_d_rel_n <- spread(SITES20_d_rel_n, domain, dom_rel_p_n)
-
-SITES20_d_rel_dur <- SITES20
-SITES20_d_rel_dur <- SITES20_d_rel_dur %>%
-  select(panelist_id, domain, dom_rel_p_dur)
-SITES20_d_rel_dur <- spread(SITES20_d_rel_dur, domain, dom_rel_p_dur)
-
-
-CNT_names <- names(SITES20_count)
-TM_names <- names(SITES20_time)
-DN_names <- names(SITES20_d_rel_n)
-DD_names <- names(SITES20_d_rel_dur)
-
-CNT_names <- paste0('CNT_', CNT_names)
-TM_names <- paste0('TM_', TM_names)
-DN_names <- paste0('DN_', DN_names)
-DD_names <- paste0('DD_', DD_names)
-
-SITES20_count <- set_names(SITES20_count, nm = CNT_names)
-SITES20_time <- set_names(SITES20_time, nm = TM_names)
-SITES20_d_rel_n <- set_names(SITES20_d_rel_n, nm = DN_names)
-SITES20_d_rel_dur <- set_names(SITES20_d_rel_dur, nm = DD_names)
-
-SITES20_count <- rename(SITES20_count, panelist_id = CNT_panelist_id)
-SITES20_time <- rename(SITES20_time, panelist_id = TM_panelist_id)
-SITES20_d_rel_n <- rename(SITES20_d_rel_n, panelist_id = DN_panelist_id)
-SITES20_d_rel_dur <- rename(SITES20_d_rel_dur, panelist_id = DD_panelist_id)
-
-rm(CNT_names, TM_names, DN_names, DD_names)
-SITES20 <- merge(SITES20_count, SITES20_time, by="panelist_id")
-SITES20 <- merge(SITES20, SITES20_d_rel_n, by="panelist_id")
-SITES20 <- merge(SITES20, SITES20_d_rel_dur, by="panelist_id")
-
-rm(SITES20_count, SITES20_time,SITES20_d_rel_n,SITES20_d_rel_dur)
-
-table(is.na(SITES20$DN_google.de))
-SITES20[is.na(SITES20)] <- 0
-
-saveRDS(SITES20, file = "./data_pieces/mob_v_SITES20.RDS")
 rm(DOMAINS, SITES20)
+SITES_1 <- SITES202[1:45823,]
+SITES_2 <- SITES202[45824:length(SITES202$panelist_id),]
+
+SITES_1 <- SITES_1 %>%
+  select(panelist_id, domain, time_spent)
+SITES_2 <- SITES_2 %>%
+  select(panelist_id, domain, time_spent)
+
+SITES20_1 <- spread(SITES_1, domain, time_spent)
+SITES20_2 <- spread(SITES_2, domain, time_spent)
+
+SITES_20 <- bind_rows(SITES20_1,SITES20_2)
+rm(SITES_1,SITES_2,SITES20_1,SITES20_2)
+
+SITES_20[is.na(SITES_20)] <- 0
+rm(SITES202)
+
+saveRDS(SITES_20, file = "./data_pieces/mob_v_SITES20.RDS")
+rm(SITES_20)
 ####################################################################################
 
 ###INFORMATION ON APP USAGE
@@ -836,94 +780,40 @@ APPS <- merge(APPS, n_apps_user, by="panelist_id")
 #############################
 #dom_tot_p_n: how many different domains visited by this user? constant within user
 #dom_tot_p_n: how much time did this user spent online? constant within user
-
-
-#limit to 20 most used domains
 SITES20 <- APPS %>%
-  group_by(panelist_id, app_n) %>%
+  group_by(app_n) %>%
   summarise(count_visits = n(),
-            time_spent = sum(duration, na.rm=TRUE))
+            time_spent = sum(duration, na.rm=TRUE) ) %>%
+  arrange(time_spent,count_visits) %>%
+  filter(time_spent >= 60 & count_visits >= 80) %>% 
+  select(app_n)
 
-SITES20 <- merge(SITES20, n_apps_user, by=c("panelist_id"))
-rm(n_apps_user)
+SITES20$MOSTUSED <- 1 
+SITES20 <- merge(SITES20, APPS, by="app_n", all=TRUE)
 
+SITES202 <- SITES20 %>% 
+  filter(MOSTUSED==1) %>% 
+  ungroup() %>% 
+  group_by(panelist_id, app_n) %>% 
+  summarise(count_visits = n(),
+            time_spent = sum(duration, na.rm=TRUE) ) 
 
-#share of visits and duration per user per domain
-X2 <- transmute(SITES20,
-                app_rel_p_n = count_visits/app_tot_p_n,
-                app_rel_p_dur = time_spent/app_tot_p_dur)
-SITES20 <- cbind(SITES20,X2)
-#X2 <- APPS %>% 
-#  group_by(panelist_id, app_n) %>% 
-#  filter(row_number() == 1) %>%
-#  select(panelist_id, app_n, starts_with("dom_rel"))
-#SITES20 <- merge(SITES20, X2, by = c("panelist_id", "app_n"))
-rm(X2)
+rm(APPS, SITES20)
+SITES_1 <- SITES202
 
-SITES20 <- SITES20 %>%
-  arrange(-(panelist_id), -(time_spent),-(count_visits) )%>%
-  ungroup() %>%
-  group_by(panelist_id) %>%
-  arrange(panelist_id, -(time_spent),-(count_visits) ) %>%
-  filter(row_number() >= 1, row_number() <= 10)
-#how many different domains remain?
-length(unique(SITES20$app_n)) #8k
-
-SITES20_count <- SITES20
-SITES20_count <- SITES20_count %>%
-  select(panelist_id, app_n, count_visits)
-SITES20_count <- spread(SITES20_count, app_n, count_visits)
-
-SITES20_time <- SITES20
-SITES20_time <- SITES20_time %>%
+SITES_1 <- SITES_1 %>%
   select(panelist_id, app_n, time_spent)
-SITES20_time <- spread(SITES20_time, app_n, time_spent)
 
-SITES20_d_rel_n <- SITES20
-SITES20_d_rel_n <- SITES20_d_rel_n %>%
-  select(panelist_id, app_n, app_rel_p_n)
-SITES20_d_rel_n <- spread(SITES20_d_rel_n, app_n, app_rel_p_n)
+SITES20_1 <- spread(SITES_1, app_n, time_spent)
 
-SITES20_d_rel_dur <- SITES20
-SITES20_d_rel_dur <- SITES20_d_rel_dur %>%
-  select(panelist_id, app_n, app_rel_p_dur)
-SITES20_d_rel_dur <- spread(SITES20_d_rel_dur, app_n, app_rel_p_dur)
+SITES_20 <- SITES20_1
+rm(SITES_1,SITES20_1)
 
+SITES_20[is.na(SITES_20)] <- 0
+rm(SITES202)
 
-CNT_names <- names(SITES20_count)
-TM_names <- names(SITES20_time)
-DN_names <- names(SITES20_d_rel_n)
-DD_names <- names(SITES20_d_rel_dur)
-
-CNT_names <- paste0('CNT_', CNT_names)
-TM_names <- paste0('TM_', TM_names)
-DN_names <- paste0('DN_', DN_names)
-DD_names <- paste0('DD_', DD_names)
-
-SITES20_count <- set_names(SITES20_count, nm = CNT_names)
-SITES20_time <- set_names(SITES20_time, nm = TM_names)
-SITES20_d_rel_n <- set_names(SITES20_d_rel_n, nm = DN_names)
-SITES20_d_rel_dur <- set_names(SITES20_d_rel_dur, nm = DD_names)
-
-SITES20_count <- rename(SITES20_count, panelist_id = CNT_panelist_id)
-SITES20_time <- rename(SITES20_time, panelist_id = TM_panelist_id)
-SITES20_d_rel_n <- rename(SITES20_d_rel_n, panelist_id = DN_panelist_id)
-SITES20_d_rel_dur <- rename(SITES20_d_rel_dur, panelist_id = DD_panelist_id)
-
-rm(CNT_names, TM_names, DN_names, DD_names)
-SITES20 <- merge(SITES20_count, SITES20_time, by="panelist_id")
-SITES20 <- merge(SITES20, SITES20_d_rel_n, by="panelist_id")
-SITES20 <- merge(SITES20, SITES20_d_rel_dur, by="panelist_id")
-
-rm(SITES20_count, SITES20_time,SITES20_d_rel_n,SITES20_d_rel_dur)
-
-#table(is.na(SITES20$DN_google.de))
-SITES20[is.na(SITES20)] <- 0
-#rm(list = ls())
-
-#saveRDS(APPS, file = "U:/respondi sinus daten/data_pieces/mob_v_app.RDS")
-rm(APPS)
-saveRDS(SITES20, file = "./data_pieces/mob_v_APPS20.RDS")
+saveRDS(SITES_20, file = "./data_pieces/mob_v_APPS20.RDS")
+rm(SITES_20)
 ####################################################################################
 
 
@@ -1091,7 +981,7 @@ saveRDS(tot_v_twelvetosix, file = "./data_pieces/mob_v_FRED_apps.RDS")
 #Put all data pices together
 rm(list = ls())
 
-media_usage <- readRDS(file = ".\\data_pieces\\MV_FB_News.RDS")
+# media_usage <- readRDS(file = ".\\data_pieces\\MV_FB_News.RDS")
 device <- readRDS(file = ".\\data_pieces\\mob_v_kindofdevice.RDS")
 kind <- readRDS(file = ".\\data_pieces\\mob_v_duration_kind.RDS")
 usetype_n <- readRDS(file = ".\\data_pieces\\mob_v_usetype.RDS")
@@ -1155,12 +1045,7 @@ mv_prep <- merge(mv_prep, media_usage, by="panelist_id", all.x = TRUE)
 rm(media_usage)
 
 saveRDS(mv_prep, file = ".\\data\\mobile_views_prepared_small.RDS")
-
-mv_prep <- merge(mv_prep, mv_Sites, by="panelist_id", all.x = TRUE)
-rm(mv_Sites)
-mv_prep <- merge(mv_prep, mv_Apps, by="panelist_id", all.x = TRUE)
-rm(mv_Apps)
-
+mv_prep <- merge(mv_Apps, mv_Sites, by="panelist_id", all.x = TRUE)
 
 saveRDS(mv_prep, file = ".\\data\\mobile_views_prepared.RDS")
 

@@ -1,4 +1,7 @@
-background <- read_dta("U:/respondi sinus daten/background_info/background.dta")
+setwd("Y:\\Respondi\\RESPONDI_w3\\")  
+
+
+background <- read_dta("./background_info/background.dta")
 
 ##get all objects with class "labelled" to correctly assign labels and levels
 subset_colclasses <- function(DF, colclasses="labelled") {
@@ -66,4 +69,4 @@ background$md_1000[background$md_1181 == "[10] Maternity leave, Parental leave, 
 background$md_1000[is.na(background$md_1000)] <- "No answer provided"
 summary(background$md_1000)
 
-save.image("U:/respondi sinus daten/background_info/background.RData")
+save.image("./background_info/background.RData")

@@ -1,6 +1,9 @@
-wave_1 <- read_dta("U:/respondi sinus daten/survey_daten/survey_data_w1.dta")
-wave_2 <- read_dta("U:/respondi sinus daten/survey_daten/survey_data_w2.dta")
-wave_3 <- read_dta("U:/respondi sinus daten/survey_daten/survey_data_w3.dta")
+setwd("Y:\\Respondi\\RESPONDI_w3\\")  
+library(haven)
+
+wave_1 <- read_dta("./survey_daten/survey_data_w1.dta")
+wave_2 <- read_dta("./survey_daten/survey_data_w2.dta")
+wave_3 <- read_dta("./survey_daten/survey_data_w3.dta")
 
 ##get all objects with class "labelled" to correctly assign labels and levels
 subset_colclasses <- function(DF, colclasses="labelled") {
@@ -28,4 +31,4 @@ wave_3 <- wave_3[,!(names(wave_3) %in% wave_3_wo)]
 wave_3 <- cbind(wave_3,wave_3_lab)
 rm(wave_3_wo, wave_3_lab,subset_colclasses)
 
-save.image("U:/respondi sinus daten/survey_daten/survey_data_all.RData")
+save.image("./survey_daten/survey_data_all.RData")

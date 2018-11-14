@@ -5,7 +5,7 @@ p_load(tidyverse, foreign, haven, data.table, dummies, caret, magrittr, randomFo
 ##Some information and descriptive stuff regarding Sinus Milieus
 ##################################################################################
 
-setwd("Z:\\Respondi\\")
+setwd("Y:\\Respondi\\RESPONDI_w3\\")
 
 oeffrecht_sites <- read.csv(file=".\\media_landscape\\Oeffrecht_sites.csv", header=TRUE, sep = ";")
 oeffrecht_apps <- read.csv(file=".\\media_landscape\\Oeffrecht_apps.csv", header=TRUE, sep = ",")
@@ -40,7 +40,7 @@ names(v4)[1]<-"app_name"
 
 v5 <- as.data.frame(unique(MV_apps$app_n[grep(oeffrecht_apps$apps[5], MV_apps$app_n)]))
 v5[,1] <- as.character(v5[,1])
-v5 <- as.data.frame(v5[-c(1, 3,4, 7), ])
+v5 <- as.data.frame(v5[-c(2, 3,5, 7), ])
 names(v5)[1]<-"app_name"
 
 v6 <- as.data.frame(unique(MV_apps$app_n[grep(oeffrecht_apps$apps[6], MV_apps$app_n)]))
@@ -81,7 +81,7 @@ rm(v15)
 v16 <- as.data.frame(unique(MV_apps$app_n[grep(oeffrecht_apps$apps[16], MV_apps$app_n)]))
 v16[,1] <- as.character(v16[,1])
 names(v16)[1]<-"app_name"
-
+rm(v16)
 
 v17 <- as.data.frame(unique(MV_apps$app_n[grep(oeffrecht_apps$apps[17], MV_apps$app_n)]))
 rm(v17)
@@ -178,7 +178,7 @@ rm(v44)
 
 v45 <- as.data.frame(unique(MV_apps$app_n[grep(oeffrecht_apps$apps[45], MV_apps$app_n)]))
 v45[,1] <- as.character(v45[,1])
-v45 <- as.data.frame(v45[-c(1,3), ])
+v45 <- as.data.frame(v45[-c(2,7), ])
 names(v45)[1]<-"app_name"
 
 v46 <- as.data.frame(unique(MV_apps$app_n[grep(oeffrecht_apps$apps[46], MV_apps$app_n)]))
@@ -208,7 +208,7 @@ v52 <- as.data.frame(unique(MV_apps$app_n[grep(oeffrecht_apps$apps[52], MV_apps$
 v52[,1] <- as.character(v52[,1])
 names(v52)[1]<-"app_name"
 
-OER_apps <- rbind(v1,v10,v13,v16,v2,v20,v23,v28,v31,v32,v33,v34,v37,v4,v45,v46,v48,v49,
+OER_apps <- rbind(v1,v10,v13,v2,v20,v23,v28,v31,v32,v33,v34,v37,v4,v45,v46,v48,v49,
                   v5,v50,v51,v52,v6,v8)
 names(OER_apps)[1]<-"app_n"
 
@@ -217,7 +217,7 @@ OER_apps$oer_app <- 1
 
 
 rm(oeffrecht_apps)
-rm(MV_apps, v1,v10,v13,v16,v2,v20,v23,v28,v31,v32,v33,v34,v37,v4,v45,v46,v48,v49,
+rm(MV_apps, v1,v10,v13,v2,v20,v23,v28,v31,v32,v33,v34,v37,v4,v45,v46,v48,v49,
    v5,v50,v51,v52,v6,v8)
 
 
