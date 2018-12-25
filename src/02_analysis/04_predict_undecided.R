@@ -101,7 +101,7 @@ names(news_media) <- gsub("[^a-zA-Z0-9]", "", names(news_media))
 names(tracking) <- gsub("[^a-zA-Z0-9]", "", names(tracking))
 names(tracking_small) <- gsub("[^a-zA-Z0-9]", "", names(tracking_small))
 
-# Blocks of features (careful with column numbers)
+# Blocks of features
 survey_noID <- back %>% 
   select(-panelistid)
 survey_noID <- survey_noID[, !duplicated(colnames(survey_noID))]
@@ -136,6 +136,7 @@ Y$undecided <- as.factor(Y$undecided)
 levels(Y$undecided) <- c("decided", "undecided")
 
 X_back_track <- merge(X_back_track, Y, by = "panelistid")
+
 ##################################################################################
 # Data exploration
 ##################################################################################
@@ -440,35 +441,35 @@ save.image(".\\undecided_dec.RData")
 # Variable Importance
 ##################################################################################
 
-plot(varImp(xgb_u7), top = 10)
+plot(varImp(xgb_u6), top = 10)
 
-imp_xgb_u7 <- varImp(xgb_u7)$importance
-imp_xgb_u7 <- rownames_to_column(imp_xgb_u7, "varname")
+imp_xgb_u6 <- varImp(xgb_u6)$importance
+imp_xgb_u6 <- rownames_to_column(imp_xgb_u6, "varname")
 
-imp_xgb_u7 <-
-  imp_xgb_u7 %>%
+imp_xgb_u6 <-
+  imp_xgb_u6 %>%
   top_n(10, Overall) %>%
   mutate(order = 11 - row_number())
 
-match(imp_xgb_u7$varname, names(X_back_track_train))
-imp_xgb_u7$varname <- c("Demo: Gender", "Tracking domain", "Demo: Single, living w. partner", "Tracking domain", "Demo: Age", "Tracking apps", "Tracking domain", "Demo: HH Inc no answer", "Tracking apps", "Tracking domain")
+match(imp_xgb_u6$varname, names(X_back_track_train))
+imp_xgb_u6$varname <- c("Gender", "Age", "Single, living w. partner", "News rel. d", "Android App", "Inc no answer", "News rel. n", "Payback mobil", "Other rel. n", "meinestadt.de")
 
-ggplot(imp_xgb_u7) +
+ggplot(imp_xgb_u6) +
   geom_point(aes(x = Overall, y = order)) + 
   geom_segment(aes(y = order, yend = order, x = 1, xend = Overall)) +
   labs(x = "Importance", y = "") +
   xlim(0, 100) +
   scale_y_continuous(
-    breaks = imp_xgb_u7$order,
-    labels = imp_xgb_u7$varname)
+    breaks = imp_xgb_u6$order,
+    labels = imp_xgb_u6$varname)
 
-ggsave("p_imp_u1.png", width = 6, height = 6)
+ggsave("p_imp_u6.png", width = 6, height = 6)
 
 ##################################################################################
 # Compare CV performance
 ##################################################################################
 
-resamps1 <- resamples(list(xgb_u1, xgb_u2, xgb_u3, xgb_u4, xgb_u5, xgb_u6, xgb_u7))
+resamps1 <- resamples(list(xgb_u1, xgb_u2, xgb_u3, xgb_u4, xgb_u5, xgb_u6))
 summary(resamps1)
 
 resamp1 <- 
@@ -476,7 +477,7 @@ resamp1 <-
           direction = "long",
           varying = 2:ncol(resamps1$values),
           sep = "~",
-          v.names = c("Accuracy", "Kappa", "ROC", "Sens", "Spec"),
+          v.names = c("Accuracy", "Kappa", "logLoss", "ROC", "Sens", "Spec"),
           timevar = "model")
 
 resamp1 <- 
@@ -487,10 +488,8 @@ resamp1 <-
                             "Demo+Tracking_general" = "2",
                             "Demo+Tracking_news" = "3",
                             "Demo+Tracking_apps" = "4",
-                            "Demo+Tracking_fake" = "5",
-                            "Tracking" = "6",
-                            "Demo+Tracking" = "7")) %>%
-  mutate(model = fct_relevel(model, "Tracking", after = 1))
+                            "Tracking" = "5",
+                            "Demo+Tracking" = "6"))
 
 p_resamp_u <- resamp1 %>%
   ggplot() +
@@ -499,7 +498,7 @@ p_resamp_u <- resamp1 %>%
   labs(x = "") +
   labs(y = "ROC-AUC") +
   coord_flip() + 
-  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
+  scale_fill_manual(values = c("#F8766D", "#00BA38", "#00BA38", "#00BA38", "#619CFF", "#00BA38")) +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 
@@ -516,7 +515,6 @@ p_xgb_u3 <- predict(xgb_u3, newdata = X_back_track_test_u, type = "prob")
 p_xgb_u4 <- predict(xgb_u4, newdata = X_back_track_test_u, type = "prob")
 p_xgb_u5 <- predict(xgb_u5, newdata = X_back_track_test_u, type = "prob")
 p_xgb_u6 <- predict(xgb_u6, newdata = X_back_track_test_u, type = "prob")
-p_xgb_u7 <- predict(xgb_u7, newdata = X_back_track_test_u, type = "prob")
 
 # ROC curves - Undecided
 
@@ -526,9 +524,8 @@ roc_xgb_u3 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u3
 roc_xgb_u4 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u4$undecided)
 roc_xgb_u5 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u5$undecided)
 roc_xgb_u6 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u6$undecided)
-roc_xgb_u7 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u7$undecided)
 
-ggroc(list("Demo" = roc_xgb_u1, "Tracking" = roc_xgb_u6, "Demo+Tracking" = roc_xgb_u7)) +
+ggroc(list("Demo" = roc_xgb_u1, "Tracking" = roc_xgb_u5, "Demo+Tracking" = roc_xgb_u6)) +
   geom_abline(aes(intercept = 1, slope = 1)) +
   scale_colour_manual(name = "", values = c("#F8766D", "#00BA38", "#619CFF"),
                       breaks = c("Demo", "Tracking", "Demo+Tracking"))
@@ -544,7 +541,6 @@ roc_xgb_u3_t <- coords(roc_xgb_u3, x = "best", best.method = "closest.topleft", 
 roc_xgb_u4_t <- coords(roc_xgb_u4, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
 roc_xgb_u5_t <- coords(roc_xgb_u5, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
 roc_xgb_u6_t <- coords(roc_xgb_u6, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
-roc_xgb_u7_t <- coords(roc_xgb_u7, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
 
 c_xgb_u1 <- as.factor(ifelse(p_xgb_u1$undecided > roc_xgb_u1_t[1], "undecided", "decided"))
 c_xgb_u2 <- as.factor(ifelse(p_xgb_u2$undecided > roc_xgb_u2_t[1], "undecided", "decided"))
@@ -552,7 +548,6 @@ c_xgb_u3 <- as.factor(ifelse(p_xgb_u3$undecided > roc_xgb_u3_t[1], "undecided", 
 c_xgb_u4 <- as.factor(ifelse(p_xgb_u4$undecided > roc_xgb_u4_t[1], "undecided", "decided"))
 c_xgb_u5 <- as.factor(ifelse(p_xgb_u5$undecided > roc_xgb_u5_t[1], "undecided", "decided"))
 c_xgb_u6 <- as.factor(ifelse(p_xgb_u6$undecided > roc_xgb_u6_t[1], "undecided", "decided"))
-c_xgb_u7 <- as.factor(ifelse(p_xgb_u7$undecided > roc_xgb_u7_t[1], "undecided", "decided"))
 
 cm1 <- confusionMatrix(c_xgb_u1, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
 cm2 <- confusionMatrix(c_xgb_u2, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
@@ -560,17 +555,15 @@ cm3 <- confusionMatrix(c_xgb_u3, X_back_track_test_u$undecided, positive = "unde
 cm4 <- confusionMatrix(c_xgb_u4, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
 cm5 <- confusionMatrix(c_xgb_u5, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
 cm6 <- confusionMatrix(c_xgb_u6, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
-cm7 <- confusionMatrix(c_xgb_u7, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
 
 Demo <- c(cm1$overall[1], cm1$byClass[c(1:2,5,7)], cm1$overall[2])
 Demo_Tracking_general <- c(cm2$overall[1], cm2$byClass[c(1:2,5,7)], cm2$overall[2])
 Demo_Tracking_news <- c(cm3$overall[1], cm3$byClass[c(1:2,5,7)], cm3$overall[2])
 Demo_Tracking_apps <- c(cm4$overall[1], cm4$byClass[c(1:2,5,7)], cm4$overall[2])
-Demo_Tracking_fake <- c(cm5$overall[1], cm5$byClass[c(1:2,5,7)], cm5$overall[2])
-Tracking <- c(cm6$overall[1], cm6$byClass[c(1:2,5,7)], cm6$overall[2])
-Demo_Tracking <- c(cm7$overall[1], cm7$byClass[c(1:2,5,7)], cm7$overall[2])
+Tracking <- c(cm5$overall[1], cm5$byClass[c(1:2,5,7)], cm5$overall[2])
+Demo_Tracking <- c(cm6$overall[1], cm6$byClass[c(1:2,5,7)], cm6$overall[2])
 
-tab <- rbind(Demo, Tracking, Demo_Tracking_general, Demo_Tracking_news, Demo_Tracking_apps, Demo_Tracking_fake, Demo_Tracking)
+tab <- rbind(Demo, Tracking, Demo_Tracking_general, Demo_Tracking_news, Demo_Tracking_apps, Demo_Tracking)
 tab
 
 rtffile <- RTF("t_perf_u.doc")
