@@ -436,109 +436,39 @@ plot(rf_u6)
 
 save.image(".\\undecided_dec.RData")
 
-# undecided - tracking data + survey_demo w. feature selection
-
-#set.seed(303493)
-#eval(parse(text=paste("xgb_v8 <- sbf(",model_v7,",
-#            data = X_back_track_train,
-#            method = 'xgbTree',
-#            trControl = ctrl1,
-#            sbfControl = sbf_ctrl,
-#            tuneGrid = xgb_grid,
-#            metric = 'logLoss',
-#            na.action = na.omit)")))
-
-#xgb_v8
-#xgb_v8$fit
-#plot(xgb_v8$fit)
-#plot(varImp(xgb_v8$fit), top = 10)
-
-
 ##################################################################################
 # Variable Importance
 ##################################################################################
 
-plot(varImp(xgb_v7), top = 10)
+plot(varImp(xgb_u7), top = 10)
 
-imp_xgb_v7 <- varImp(xgb_v7)$importance
-imp_xgb_v7 <- rownames_to_column(imp_xgb_v7, "varname")
+imp_xgb_u7 <- varImp(xgb_u7)$importance
+imp_xgb_u7 <- rownames_to_column(imp_xgb_u7, "varname")
 
-imp_xgb_v7 <-
-  imp_xgb_v7 %>%
+imp_xgb_u7 <-
+  imp_xgb_u7 %>%
   top_n(10, Overall) %>%
   mutate(order = 11 - row_number())
 
-match(imp_xgb_v7$varname, names(X_back_track_train))
-imp_xgb_v7$varname <- c("Tracking news", "Demo: Manual Worker", "Demo: Age", "Demo: High school degree", "Demo: Own house", "Tracking news", "Tracking domain", "Tracking apps", "Tracking domain", "Tracking domain")
+match(imp_xgb_u7$varname, names(X_back_track_train))
+imp_xgb_u7$varname <- c("Demo: Gender", "Tracking domain", "Demo: Single, living w. partner", "Tracking domain", "Demo: Age", "Tracking apps", "Tracking domain", "Demo: HH Inc no answer", "Tracking apps", "Tracking domain")
 
-ggplot(imp_xgb_v7) +
+ggplot(imp_xgb_u7) +
   geom_point(aes(x = Overall, y = order)) + 
   geom_segment(aes(y = order, yend = order, x = 1, xend = Overall)) +
   labs(x = "Importance", y = "") +
   xlim(0, 100) +
   scale_y_continuous(
-    breaks = imp_xgb_v7$order,
-    labels = imp_xgb_v7$varname)
+    breaks = imp_xgb_u7$order,
+    labels = imp_xgb_u7$varname)
 
-ggsave("p_imp_v7.png", width = 6, height = 6)
-
-plot(varImp(xgb_a7), top = 10)
-
-imp_xgb_a7 <- varImp(xgb_a7)$importance
-imp_xgb_a7 <- rownames_to_column(imp_xgb_a7, "varname")
-
-imp_xgb_a7 <-
-  imp_xgb_a7 %>%
-  top_n(10, Overall) %>%
-  mutate(order = 11 - row_number())
-
-match(imp_xgb_a7$varname, names(X_back_track_train))
-imp_xgb_a7$varname <- c("Tracking fake", "Demo: High school degree", "Tracking domain", "Demo: Gender", "Tracking domain", "Tracking domain", "Tracking domain", "Tracking domain", "Tracking domain", "Tracking domain")
-
-ggplot(imp_xgb_a7) +
-  geom_point(aes(x = Overall, y = order)) + 
-  geom_segment(aes(y = order, yend = order, x = 1, xend = Overall)) +
-  labs(x = "Importance", y = "") +
-  xlim(0, 100) +
-  scale_y_continuous(
-    breaks = imp_xgb_a7$order,
-    labels = imp_xgb_a7$varname)
-
-ggsave("p_imp_a7.png", width = 6, height = 6)
-
-plot(varImp(xgb_l7), top = 10)
-
-imp_xgb_l7 <- varImp(xgb_l7)$importance
-imp_xgb_l7 <- rownames_to_column(imp_xgb_l7, "varname")
-
-imp_xgb_l7 <-
-  imp_xgb_l7 %>%
-  top_n(10, Overall) %>%
-  mutate(order = 11 - row_number())
-
-match(imp_xgb_l7$varname, names(X_back_track_train))
-imp_xgb_l7$varname <- c("Tracking domain", "Tracking fake", "Tracking news", "Tracking apps", "Tracking domain", "Tracking domain", "Tracking domain", "Tracking apps", "Tracking apps", "Tracking domain")
-
-ggplot(imp_xgb_l7) +
-  geom_point(aes(x = Overall, y = order)) + 
-  geom_segment(aes(y = order, yend = order, x = 1, xend = Overall)) +
-  labs(x = "Importance", y = "") +
-  xlim(0, 100) +
-  scale_y_continuous(
-    breaks = imp_xgb_l7$order,
-    labels = imp_xgb_l7$varname)
-
-ggsave("p_imp_l7.png", width = 6, height = 6)
-
-# plot(varImp(xgb_p7), top = 10)
+ggsave("p_imp_u1.png", width = 6, height = 6)
 
 ##################################################################################
 # Compare CV performance
 ##################################################################################
 
-# CV plot - voted
-
-resamps1 <- resamples(list(xgb_v1, xgb_v2, xgb_v3, xgb_v5, xgb_v6, xgb_v7))
+resamps1 <- resamples(list(xgb_u1, xgb_u2, xgb_u3, xgb_u4, xgb_u5, xgb_u6, xgb_u7))
 summary(resamps1)
 
 resamp1 <- 
@@ -562,7 +492,7 @@ resamp1 <-
                             "Demo+Tracking" = "7")) %>%
   mutate(model = fct_relevel(model, "Tracking", after = 1))
 
-p_resamp_v <- resamp1 %>%
+p_resamp_u <- resamp1 %>%
   ggplot() +
   geom_boxplot(aes(y = ROC, x = fct_rev(model), fill = model)) +
   ylim(0, 1) +
@@ -573,194 +503,64 @@ p_resamp_v <- resamp1 %>%
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 
-ggsave("p_resamp_v.png", p_resamp_v, width = 7.5, height = 7)
-
-# CV plot - AFD
-
-resamps2 <- resamples(list(xgb_a1, xgb_a2, xgb_a3, xgb_a4, xgb_a5, xgb_a6, xgb_a7))
-summary(resamps2)
-
-resamp2 <- 
-  reshape(resamps2$values,
-          direction = "long",
-          varying = 2:ncol(resamps2$values),
-          sep = "~",
-          v.names = c("Accuracy", "Kappa", "ROC", "Sens", "Spec"),
-          timevar = "model")
-
-resamp2 <- 
-  resamp2 %>%
-  mutate(model = factor(model)) %>%
-  mutate(model = fct_recode(model,
-                            "Demo" = "1",
-                            "Demo+Tracking_general" = "2",
-                            "Demo+Tracking_news" = "3",
-                            "Demo+Tracking_apps" = "4",
-                            "Demo+Tracking_fake" = "5",
-                            "Tracking" = "6",
-                            "Demo+Tracking" = "7")) %>%
-  mutate(model = fct_relevel(model, "Tracking", after = 1))
-
-p_resamp_a <- resamp2 %>%
-  ggplot() +
-  geom_boxplot(aes(y = ROC, x = fct_rev(model), fill = model)) +
-  ylim(0, 1) +
-  labs(x = "") +
-  labs(y = "ROC-AUC") +
-  coord_flip() + 
-  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
-  theme(legend.position = "none") +
-  theme(text = element_text(size = 15))
-
-ggsave("p_resamp_a.png", p_resamp_a, width = 7.5, height = 7)
-
-# CV plot - LEFT
-
-resamps3 <- resamples(list(xgb_l1, xgb_l2, xgb_l3, xgb_l4, xgb_l5, xgb_l6, xgb_l7))
-summary(resamps3)
-
-resamp3 <- 
-  reshape(resamps3$values,
-          direction = "long",
-          varying = 2:ncol(resamps3$values),
-          sep = "~",
-          v.names = c("Accuracy", "Kappa", "ROC", "Sens", "Spec"),
-          timevar = "model")
-
-resamp3 <- 
-  resamp3 %>%
-  mutate(model = factor(model)) %>%
-  mutate(model = fct_recode(model,
-                            "Demo" = "1",
-                            "Demo+Tracking_general" = "2",
-                            "Demo+Tracking_news" = "3",
-                            "Demo+Tracking_apps" = "4",
-                            "Demo+Tracking_fake" = "5",
-                            "Tracking" = "6",
-                            "Demo+Tracking" = "7")) %>%
-  mutate(model = fct_relevel(model, "Tracking", after = 1))
-
-p_resamp_l <- resamp3 %>%
-  ggplot() +
-  geom_boxplot(aes(y = ROC, x = fct_rev(model), fill = model)) +
-  ylim(0, 1) +
-  labs(x = "") +
-  labs(y = "ROC-AUC") +
-  coord_flip() + 
-  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
-  theme(legend.position = "none") +
-  theme(text = element_text(size = 15))
-
-ggsave("p_resamp_l.png", p_resamp_l, width = 7.5, height = 7)
+ggsave("p_resamp_u.png", p_resamp_u, width = 7.5, height = 7)
 
 ##################################################################################
 # Predict in test data
 ##################################################################################
 
-X_back_track_test_v <- X_back_track_test[!is.na(X_back_track_test$voted),]
-p_xgb_v1 <- predict(xgb_v1, newdata = X_back_track_test_v, type = "prob")
-p_xgb_v2 <- predict(xgb_v2, newdata = X_back_track_test_v, type = "prob")
-p_xgb_v3 <- predict(xgb_v3, newdata = X_back_track_test_v, type = "prob")
-p_xgb_v4 <- predict(xgb_v4, newdata = X_back_track_test_v, type = "prob")
-p_xgb_v5 <- predict(xgb_v5, newdata = X_back_track_test_v, type = "prob")
-p_xgb_v6 <- predict(xgb_v6, newdata = X_back_track_test_v, type = "prob")
-p_xgb_v7 <- predict(xgb_v7, newdata = X_back_track_test_v, type = "prob")
+X_back_track_test_u <- X_back_track_test[!is.na(X_back_track_test$undecided),]
+p_xgb_u1 <- predict(xgb_u1, newdata = X_back_track_test_u, type = "prob")
+p_xgb_u2 <- predict(xgb_u2, newdata = X_back_track_test_u, type = "prob")
+p_xgb_u3 <- predict(xgb_u3, newdata = X_back_track_test_u, type = "prob")
+p_xgb_u4 <- predict(xgb_u4, newdata = X_back_track_test_u, type = "prob")
+p_xgb_u5 <- predict(xgb_u5, newdata = X_back_track_test_u, type = "prob")
+p_xgb_u6 <- predict(xgb_u6, newdata = X_back_track_test_u, type = "prob")
+p_xgb_u7 <- predict(xgb_u7, newdata = X_back_track_test_u, type = "prob")
 
-X_back_track_test_a <- X_back_track_test[!is.na(X_back_track_test$AFD),]
-p_xgb_a1 <- predict(xgb_a1, newdata = X_back_track_test_a, type = "prob")
-p_xgb_a2 <- predict(xgb_a2, newdata = X_back_track_test_a, type = "prob")
-p_xgb_a3 <- predict(xgb_a3, newdata = X_back_track_test_a, type = "prob")
-p_xgb_a4 <- predict(xgb_a4, newdata = X_back_track_test_a, type = "prob")
-p_xgb_a5 <- predict(xgb_a5, newdata = X_back_track_test_a, type = "prob")
-p_xgb_a6 <- predict(xgb_a6, newdata = X_back_track_test_a, type = "prob")
-p_xgb_a7 <- predict(xgb_a7, newdata = X_back_track_test_a, type = "prob")
+# ROC curves - Undecided
 
-X_back_track_test_l <- X_back_track_test[!is.na(X_back_track_test$LEFT),]
-p_xgb_l1 <- predict(xgb_l1, newdata = X_back_track_test_l, type = "prob")
-p_xgb_l2 <- predict(xgb_l2, newdata = X_back_track_test_l, type = "prob")
-p_xgb_l3 <- predict(xgb_l3, newdata = X_back_track_test_l, type = "prob")
-p_xgb_l4 <- predict(xgb_l4, newdata = X_back_track_test_l, type = "prob")
-p_xgb_l5 <- predict(xgb_l5, newdata = X_back_track_test_l, type = "prob")
-p_xgb_l6 <- predict(xgb_l6, newdata = X_back_track_test_l, type = "prob")
-p_xgb_l7 <- predict(xgb_l7, newdata = X_back_track_test_l, type = "prob")
+roc_xgb_u1 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u1$undecided)
+roc_xgb_u2 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u2$undecided)
+roc_xgb_u3 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u3$undecided)
+roc_xgb_u4 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u4$undecided)
+roc_xgb_u5 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u5$undecided)
+roc_xgb_u6 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u6$undecided)
+roc_xgb_u7 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u7$undecided)
 
-# ROC curves - voted
-
-roc_xgb_v1 <- roc(response = X_back_track_test_v$voted, predictor = p_xgb_v1$voted)
-roc_xgb_v2 <- roc(response = X_back_track_test_v$voted, predictor = p_xgb_v2$voted)
-roc_xgb_v3 <- roc(response = X_back_track_test_v$voted, predictor = p_xgb_v3$voted)
-roc_xgb_v4 <- roc(response = X_back_track_test_v$voted, predictor = p_xgb_v4$voted)
-roc_xgb_v5 <- roc(response = X_back_track_test_v$voted, predictor = p_xgb_v5$voted)
-roc_xgb_v6 <- roc(response = X_back_track_test_v$voted, predictor = p_xgb_v6$voted)
-roc_xgb_v7 <- roc(response = X_back_track_test_v$voted, predictor = p_xgb_v7$voted)
-
-ggroc(list("Demo" = roc_xgb_v1, "Tracking" = roc_xgb_v6, "Demo+Tracking" = roc_xgb_v7)) +
+ggroc(list("Demo" = roc_xgb_u1, "Tracking" = roc_xgb_u6, "Demo+Tracking" = roc_xgb_u7)) +
   geom_abline(aes(intercept = 1, slope = 1)) +
   scale_colour_manual(name = "", values = c("#F8766D", "#00BA38", "#619CFF"),
                       breaks = c("Demo", "Tracking", "Demo+Tracking"))
 
-ggsave("p_roc_v.png", width = 7.5, height = 6)
+ggsave("p_roc_u.png", width = 7.5, height = 6)
 
-# ROC curves - AFD
+# Performance at "optimal" threshold
 
-roc_xgb_a1 <- roc(response = X_back_track_test_a$AFD, predictor = p_xgb_a1$AFD)
-roc_xgb_a2 <- roc(response = X_back_track_test_a$AFD, predictor = p_xgb_a2$AFD)
-roc_xgb_a3 <- roc(response = X_back_track_test_a$AFD, predictor = p_xgb_a3$AFD)
-roc_xgb_a4 <- roc(response = X_back_track_test_a$AFD, predictor = p_xgb_a4$AFD)
-roc_xgb_a5 <- roc(response = X_back_track_test_a$AFD, predictor = p_xgb_a5$AFD)
-roc_xgb_a6 <- roc(response = X_back_track_test_a$AFD, predictor = p_xgb_a6$AFD)
-roc_xgb_a7 <- roc(response = X_back_track_test_a$AFD, predictor = p_xgb_a7$AFD)
+prop.table(table(X_back_track_train$undecided))
+roc_xgb_u1_t <- coords(roc_xgb_u1, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
+roc_xgb_u2_t <- coords(roc_xgb_u2, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
+roc_xgb_u3_t <- coords(roc_xgb_u3, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
+roc_xgb_u4_t <- coords(roc_xgb_u4, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
+roc_xgb_u5_t <- coords(roc_xgb_u5, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
+roc_xgb_u6_t <- coords(roc_xgb_u6, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
+roc_xgb_u7_t <- coords(roc_xgb_u7, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.2))
 
-ggroc(list("Demo" = roc_xgb_a1, "Tracking" = roc_xgb_a6, "Demo+Tracking" = roc_xgb_a7)) +
-  geom_abline(aes(intercept = 1, slope = 1)) +
-  scale_colour_manual(name = "", values = c("#F8766D", "#00BA38", "#619CFF"),
-                      breaks = c("Demo", "Tracking", "Demo+Tracking"))
+c_xgb_u1 <- as.factor(ifelse(p_xgb_u1$undecided > roc_xgb_u1_t[1], "undecided", "decided"))
+c_xgb_u2 <- as.factor(ifelse(p_xgb_u2$undecided > roc_xgb_u2_t[1], "undecided", "decided"))
+c_xgb_u3 <- as.factor(ifelse(p_xgb_u3$undecided > roc_xgb_u3_t[1], "undecided", "decided"))
+c_xgb_u4 <- as.factor(ifelse(p_xgb_u4$undecided > roc_xgb_u4_t[1], "undecided", "decided"))
+c_xgb_u5 <- as.factor(ifelse(p_xgb_u5$undecided > roc_xgb_u5_t[1], "undecided", "decided"))
+c_xgb_u6 <- as.factor(ifelse(p_xgb_u6$undecided > roc_xgb_u6_t[1], "undecided", "decided"))
+c_xgb_u7 <- as.factor(ifelse(p_xgb_u7$undecided > roc_xgb_u7_t[1], "undecided", "decided"))
 
-ggsave("p_roc_a.png", width = 7.5, height = 6)
-
-# ROC curves - LEFT
-
-roc_xgb_l1 <- roc(response = X_back_track_test_l$LEFT, predictor = p_xgb_l1$LEFT)
-roc_xgb_l2 <- roc(response = X_back_track_test_l$LEFT, predictor = p_xgb_l2$LEFT)
-roc_xgb_l3 <- roc(response = X_back_track_test_l$LEFT, predictor = p_xgb_l3$LEFT)
-roc_xgb_l4 <- roc(response = X_back_track_test_l$LEFT, predictor = p_xgb_l4$LEFT)
-roc_xgb_l5 <- roc(response = X_back_track_test_l$LEFT, predictor = p_xgb_l5$LEFT)
-roc_xgb_l6 <- roc(response = X_back_track_test_l$LEFT, predictor = p_xgb_l6$LEFT)
-roc_xgb_l7 <- roc(response = X_back_track_test_l$LEFT, predictor = p_xgb_l7$LEFT)
-
-ggroc(list("Demo" = roc_xgb_l1, "Tracking" = roc_xgb_l6, "Demo+Tracking" = roc_xgb_l7)) +
-  geom_abline(aes(intercept = 1, slope = 1)) +
-  scale_colour_manual(name = "", values = c("#F8766D", "#00BA38", "#619CFF"),
-                      breaks = c("Demo", "Tracking", "Demo+Tracking"))
-
-ggsave("p_roc_l.png", width = 7.5, height = 6)
-
-# Performance at "optimal" threshold - voted
-
-prop.table(table(X_back_track_train$voted))
-roc_xgb_v1_t <- coords(roc_xgb_v1, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.9))
-roc_xgb_v2_t <- coords(roc_xgb_v2, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.9))
-roc_xgb_v3_t <- coords(roc_xgb_v3, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.9))
-roc_xgb_v4_t <- coords(roc_xgb_v4, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.9))
-roc_xgb_v5_t <- coords(roc_xgb_v5, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.9))
-roc_xgb_v6_t <- coords(roc_xgb_v6, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.9))
-roc_xgb_v7_t <- coords(roc_xgb_v7, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.9))
-
-c_xgb_v1 <- as.factor(ifelse(p_xgb_v1$voted > roc_xgb_v1_t[1], "voted", "not_voted"))
-c_xgb_v2 <- as.factor(ifelse(p_xgb_v2$voted > roc_xgb_v2_t[1], "voted", "not_voted"))
-c_xgb_v3 <- as.factor(ifelse(p_xgb_v3$voted > roc_xgb_v3_t[1], "voted", "not_voted"))
-c_xgb_v4 <- as.factor(ifelse(p_xgb_v4$voted > roc_xgb_v4_t[1], "voted", "not_voted"))
-c_xgb_v5 <- as.factor(ifelse(p_xgb_v5$voted > roc_xgb_v5_t[1], "voted", "not_voted"))
-c_xgb_v6 <- as.factor(ifelse(p_xgb_v6$voted > roc_xgb_v6_t[1], "voted", "not_voted"))
-c_xgb_v7 <- as.factor(ifelse(p_xgb_v7$voted > roc_xgb_v7_t[1], "voted", "not_voted"))
-
-cm1 <- confusionMatrix(c_xgb_v1, X_back_track_test_v$voted, positive = "not_voted", mode = "everything")
-cm2 <- confusionMatrix(c_xgb_v2, X_back_track_test_v$voted, positive = "not_voted", mode = "everything")
-cm3 <- confusionMatrix(c_xgb_v3, X_back_track_test_v$voted, positive = "not_voted", mode = "everything")
-cm4 <- confusionMatrix(c_xgb_v4, X_back_track_test_v$voted, positive = "not_voted", mode = "everything")
-cm5 <- confusionMatrix(c_xgb_v5, X_back_track_test_v$voted, positive = "not_voted", mode = "everything")
-cm6 <- confusionMatrix(c_xgb_v6, X_back_track_test_v$voted, positive = "not_voted", mode = "everything")
-cm7 <- confusionMatrix(c_xgb_v7, X_back_track_test_v$voted, positive = "not_voted", mode = "everything")
+cm1 <- confusionMatrix(c_xgb_u1, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
+cm2 <- confusionMatrix(c_xgb_u2, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
+cm3 <- confusionMatrix(c_xgb_u3, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
+cm4 <- confusionMatrix(c_xgb_u4, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
+cm5 <- confusionMatrix(c_xgb_u5, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
+cm6 <- confusionMatrix(c_xgb_u6, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
+cm7 <- confusionMatrix(c_xgb_u7, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
 
 Demo <- c(cm1$overall[1], cm1$byClass[c(1:2,5,7)], cm1$overall[2])
 Demo_Tracking_general <- c(cm2$overall[1], cm2$byClass[c(1:2,5,7)], cm2$overall[2])
@@ -773,90 +573,7 @@ Demo_Tracking <- c(cm7$overall[1], cm7$byClass[c(1:2,5,7)], cm7$overall[2])
 tab <- rbind(Demo, Tracking, Demo_Tracking_general, Demo_Tracking_news, Demo_Tracking_apps, Demo_Tracking_fake, Demo_Tracking)
 tab
 
-rtffile <- RTF("t_perf_v.doc")
+rtffile <- RTF("t_perf_u.doc")
 addTable(rtffile, cbind(rownames(tab),round(tab, digits = 3)))
 done(rtffile)
 
-# Performance at "optimal" threshold - AFD
-
-prop.table(table(X_back_track_train$AFD))
-roc_xgb_a1_t <- coords(roc_xgb_a1, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
-roc_xgb_a2_t <- coords(roc_xgb_a2, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
-roc_xgb_a3_t <- coords(roc_xgb_a3, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
-roc_xgb_a4_t <- coords(roc_xgb_a4, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
-roc_xgb_a5_t <- coords(roc_xgb_a5, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
-roc_xgb_a6_t <- coords(roc_xgb_a6, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
-roc_xgb_a7_t <- coords(roc_xgb_a7, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
-
-c_xgb_a1 <- as.factor(ifelse(p_xgb_a1$AFD > roc_xgb_a1_t[1], "AFD", "not_AFD"))
-c_xgb_a2 <- as.factor(ifelse(p_xgb_a2$AFD > roc_xgb_a2_t[1], "AFD", "not_AFD"))
-c_xgb_a3 <- as.factor(ifelse(p_xgb_a3$AFD > roc_xgb_a3_t[1], "AFD", "not_AFD"))
-c_xgb_a4 <- as.factor(ifelse(p_xgb_a4$AFD > roc_xgb_a4_t[1], "AFD", "not_AFD"))
-c_xgb_a5 <- as.factor(ifelse(p_xgb_a5$AFD > roc_xgb_a5_t[1], "AFD", "not_AFD"))
-c_xgb_a6 <- as.factor(ifelse(p_xgb_a6$AFD > roc_xgb_a6_t[1], "AFD", "not_AFD"))
-c_xgb_a7 <- as.factor(ifelse(p_xgb_a7$AFD > roc_xgb_a7_t[1], "AFD", "not_AFD"))
-
-cm1 <- confusionMatrix(c_xgb_a1, X_back_track_test_a$AFD, positive = "AFD", mode = "everything")
-cm2 <- confusionMatrix(c_xgb_a2, X_back_track_test_a$AFD, positive = "AFD", mode = "everything")
-cm3 <- confusionMatrix(c_xgb_a3, X_back_track_test_a$AFD, positive = "AFD", mode = "everything")
-cm4 <- confusionMatrix(c_xgb_a4, X_back_track_test_a$AFD, positive = "AFD", mode = "everything")
-cm5 <- confusionMatrix(c_xgb_a5, X_back_track_test_a$AFD, positive = "AFD", mode = "everything")
-cm6 <- confusionMatrix(c_xgb_a6, X_back_track_test_a$AFD, positive = "AFD", mode = "everything")
-cm7 <- confusionMatrix(c_xgb_a7, X_back_track_test_a$AFD, positive = "AFD", mode = "everything")
-
-Demo <- c(cm1$overall[1], cm1$byClass[c(1:2,5,7)], cm1$overall[2])
-Demo_Tracking_general <- c(cm2$overall[1], cm2$byClass[c(1:2,5,7)], cm2$overall[2])
-Demo_Tracking_news <- c(cm3$overall[1], cm3$byClass[c(1:2,5,7)], cm3$overall[2])
-Demo_Tracking_apps <- c(cm4$overall[1], cm4$byClass[c(1:2,5,7)], cm4$overall[2])
-Demo_Tracking_fake <- c(cm5$overall[1], cm5$byClass[c(1:2,5,7)], cm5$overall[2])
-Tracking <- c(cm6$overall[1], cm6$byClass[c(1:2,5,7)], cm6$overall[2])
-Demo_Tracking <- c(cm7$overall[1], cm7$byClass[c(1:2,5,7)], cm7$overall[2])
-
-tab <- rbind(Demo, Tracking, Demo_Tracking_general, Demo_Tracking_news, Demo_Tracking_apps, Demo_Tracking_fake, Demo_Tracking)
-tab
-
-rtffile <- RTF("t_perf_a.doc")
-addTable(rtffile, cbind(rownames(tab),round(tab, digits = 3)))
-done(rtffile)
-
-# Performance at "optimal" threshold - LEFT
-
-prop.table(table(X_back_track_train$LEFT))
-roc_xgb_l1_t <- coords(roc_xgb_l1, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
-roc_xgb_l2_t <- coords(roc_xgb_l2, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
-roc_xgb_l3_t <- coords(roc_xgb_l3, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
-roc_xgb_l4_t <- coords(roc_xgb_l4, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
-roc_xgb_l5_t <- coords(roc_xgb_l5, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
-roc_xgb_l6_t <- coords(roc_xgb_l6, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
-roc_xgb_l7_t <- coords(roc_xgb_l7, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
-
-c_xgb_l1 <- as.factor(ifelse(p_xgb_l1$LEFT > roc_xgb_l1_t[1], "LEFT", "not_LEFT"))
-c_xgb_l2 <- as.factor(ifelse(p_xgb_l2$LEFT > roc_xgb_l2_t[1], "LEFT", "not_LEFT"))
-c_xgb_l3 <- as.factor(ifelse(p_xgb_l3$LEFT > roc_xgb_l3_t[1], "LEFT", "not_LEFT"))
-c_xgb_l4 <- as.factor(ifelse(p_xgb_l4$LEFT > roc_xgb_l4_t[1], "LEFT", "not_LEFT"))
-c_xgb_l5 <- as.factor(ifelse(p_xgb_l5$LEFT > roc_xgb_l5_t[1], "LEFT", "not_LEFT"))
-c_xgb_l6 <- as.factor(ifelse(p_xgb_l6$LEFT > roc_xgb_l6_t[1], "LEFT", "not_LEFT"))
-c_xgb_l7 <- as.factor(ifelse(p_xgb_l7$LEFT > roc_xgb_l7_t[1], "LEFT", "not_LEFT"))
-
-cm1 <- confusionMatrix(c_xgb_l1, X_back_track_test_l$LEFT, positive = "LEFT", mode = "everything")
-cm2 <- confusionMatrix(c_xgb_l2, X_back_track_test_l$LEFT, positive = "LEFT", mode = "everything")
-cm3 <- confusionMatrix(c_xgb_l3, X_back_track_test_l$LEFT, positive = "LEFT", mode = "everything")
-cm4 <- confusionMatrix(c_xgb_l4, X_back_track_test_l$LEFT, positive = "LEFT", mode = "everything")
-cm5 <- confusionMatrix(c_xgb_l5, X_back_track_test_l$LEFT, positive = "LEFT", mode = "everything")
-cm6 <- confusionMatrix(c_xgb_l6, X_back_track_test_l$LEFT, positive = "LEFT", mode = "everything")
-cm7 <- confusionMatrix(c_xgb_l7, X_back_track_test_l$LEFT, positive = "LEFT", mode = "everything")
-
-Demo <- c(cm1$overall[1], cm1$byClass[c(1:2,5,7)], cm1$overall[2])
-Demo_Tracking_general <- c(cm2$overall[1], cm2$byClass[c(1:2,5,7)], cm2$overall[2])
-Demo_Tracking_news <- c(cm3$overall[1], cm3$byClass[c(1:2,5,7)], cm3$overall[2])
-Demo_Tracking_apps <- c(cm4$overall[1], cm4$byClass[c(1:2,5,7)], cm4$overall[2])
-Demo_Tracking_fake <- c(cm5$overall[1], cm5$byClass[c(1:2,5,7)], cm5$overall[2])
-Tracking <- c(cm6$overall[1], cm6$byClass[c(1:2,5,7)], cm6$overall[2])
-Demo_Tracking <- c(cm7$overall[1], cm7$byClass[c(1:2,5,7)], cm7$overall[2])
-
-tab <- rbind(Demo, Tracking, Demo_Tracking_general, Demo_Tracking_news, Demo_Tracking_apps, Demo_Tracking_fake, Demo_Tracking)
-tab
-
-rtffile <- RTF("t_perf_l.doc")
-addTable(rtffile, cbind(rownames(tab),round(tab, digits = 3)))
-done(rtffile)
