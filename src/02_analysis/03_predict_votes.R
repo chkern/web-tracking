@@ -52,25 +52,10 @@ back[,c("gender", "state", "hh_size", "num_children", "net_inc", "hh_inc", "acco
                  "why_unemp", "child_in_hh")], function(back){`levels<-`(addNA(back),c(levels(back),"None"))})
 
 # Clean factor levels
-levels(back$gender) <- gsub("[^a-zA-Z0-9]", "", levels(back$gender))
-levels(back$state) <- gsub("[^a-zA-Z0-9]", "", levels(back$state))
-levels(back$hh_size) <- gsub("[^a-zA-Z0-9]", "", levels(back$hh_size))
-levels(back$num_children) <- gsub("[^a-zA-Z0-9]", "", levels(back$num_children))
-levels(back$net_inc) <- gsub("[^a-zA-Z0-9]", "", levels(back$net_inc))
-levels(back$hh_inc) <- gsub("[^a-zA-Z0-9]", "", levels(back$hh_inc))
-levels(back$accom_type) <- gsub("[^a-zA-Z0-9]", "", levels(back$accom_type))
-levels(back$edu_school) <- gsub("[^a-zA-Z0-9]", "", levels(back$edu_school))
-levels(back$edu_voc) <- gsub("[^a-zA-Z0-9]", "", levels(back$edu_voc))
-levels(back$emp_type) <- gsub("[^a-zA-Z0-9]", "", levels(back$emp_type))
-levels(back$occup) <- gsub("[^a-zA-Z0-9]", "", levels(back$occup))
-levels(back$twn_size) <- gsub("[^a-zA-Z0-9]", "", levels(back$twn_size))
-levels(back$edu_school) <- gsub("[^a-zA-Z0-9]", "", levels(back$edu_school))
-levels(back$edu_voc) <- gsub("[^a-zA-Z0-9]", "", levels(back$edu_voc))
-levels(back$job_dep) <- gsub("[^a-zA-Z0-9]", "", levels(back$job_dep))
-levels(back$job_status) <- gsub("[^a-zA-Z0-9]", "", levels(back$job_status))
-levels(back$industry) <- gsub("[^a-zA-Z0-9]", "", levels(back$industry))
-levels(back$why_unemp) <- gsub("[^a-zA-Z0-9]", "", levels(back$why_unemp))
-levels(back$child_in_hh) <- gsub("[^a-zA-Z0-9]", "", levels(back$child_in_hh))
+for(i in c("net_inc", "hh_inc", "accom_type", "gender", "state", "hh_size", "num_children", "edu_school", "edu_voc",
+            "emp_type", "occup", "twn_size", "job_dep", "job_status", "industry", "why_unemp", "child_in_hh")){
+  levels(back[,i]) <- gsub("[^a-zA-Z0-9]", "",levels(back[,i]))
+}
 back <- droplevels(back)
 
 # delete variables with hardly any variation
@@ -140,38 +125,6 @@ Y$LEFT <- as.factor(Y$LEFT)
 levels(Y$LEFT) <- c("not_LEFT", "LEFT")
 
 X_back_track <- merge(X_back_track, Y, by = "panelistid")
-
-##################################################################################
-# Data exploration
-##################################################################################
-
-X_back_track_e <- X_back_track
-
-s <- summary(X_back_track_e$t_d_E_mails)
-X_back_track_e$E_mails <- cut(X_back_track_e$t_d_E_mails, breaks = c(-1,0,s[5],s[6]))
-s <- summary(X_back_track_e$t_d_Facebook)
-X_back_track_e$Facebook <- cut(X_back_track_e$t_d_Facebook, breaks = c(-1,0,s[5],s[6]))
-s <- summary(X_back_track_e$t_d_Games)
-X_back_track_e$Games <- cut(X_back_track_e$t_d_Games, breaks = c(-1,0,s[5],s[6]))
-s <- summary(X_back_track_e$t_d_News)
-X_back_track_e$News <- cut(X_back_track_e$t_d_News, breaks = c(-1,0,s[5],s[6]))
-s <- summary(X_back_track_e$t_d_Shopping)
-X_back_track_e$Shopping <- cut(X_back_track_e$t_d_Shopping, breaks = c(-1,0,s[5],s[6]))
-s <- summary(X_back_track_e$t_d_Social_Media)
-X_back_track_e$Social_Media <- cut(X_back_track_e$t_d_Social_Media, breaks = c(-1,0,s[5],s[6]))
-s <- summary(X_back_track_e$t_d_WhatsApp)
-X_back_track_e$WhatsApp <- cut(X_back_track_e$t_d_WhatsApp, breaks = c(-1,0,s[5],s[6]))
-s <- summary(X_back_track_e$t_d_YouTube)
-X_back_track_e$YouTube <- cut(X_back_track_e$t_d_YouTube, breaks = c(-1,0,s[5],s[6]))
-
-ggplot(X_back_track_e, aes(E_mails)) + geom_bar(aes(fill=voted))
-ggplot(X_back_track_e, aes(Facebook)) + geom_bar(aes(fill=voted))
-ggplot(X_back_track_e, aes(Games)) + geom_bar(aes(fill=voted))
-ggplot(X_back_track_e, aes(News)) + geom_bar(aes(fill=voted))
-ggplot(X_back_track_e, aes(Shopping)) + geom_bar(aes(fill=voted))
-ggplot(X_back_track_e, aes(Social_Media)) + geom_bar(aes(fill=voted))
-ggplot(X_back_track_e, aes(WhatsApp)) + geom_bar(aes(fill=voted))
-ggplot(X_back_track_e, aes(YouTube)) + geom_bar(aes(fill=voted))
 
 ##################################################################################
 # Train-test split
@@ -279,7 +232,7 @@ party_tree_a2 <- as.party(tree_a2)
 plot(party_tree_a2, gp = gpar(fontsize = 8.5))
 
 ##################################################################################
-# Models - XGBoost
+# Models - XGBoost & RF
 ##################################################################################
 
 # Voted
@@ -860,7 +813,7 @@ ggplot(imp_xgb_v6) +
   scale_y_continuous(
     breaks = imp_xgb_v6$order,
     labels = imp_xgb_v6$varname)
-ggsave("p_imp_v6.png", width = 6, height = 6)
+ggsave("p_imp_v.png", width = 6, height = 6)
 
 plot(varImp(xgb_a6), top = 10)
 
@@ -883,7 +836,7 @@ ggplot(imp_xgb_a6) +
   scale_y_continuous(
     breaks = imp_xgb_a6$order,
     labels = imp_xgb_a6$varname)
-ggsave("p_imp_a6.png", width = 6, height = 6)
+ggsave("p_imp_a.png", width = 6, height = 6)
 
 plot(varImp(xgb_l6), top = 10)
 
@@ -906,7 +859,7 @@ ggplot(imp_xgb_l6) +
   scale_y_continuous(
     breaks = imp_xgb_l6$order,
     labels = imp_xgb_l6$varname)
-ggsave("p_imp_l6.png", width = 6, height = 6)
+ggsave("p_imp_l.png", width = 6, height = 6)
 
 ##################################################################################
 # Compare CV performance
@@ -934,20 +887,34 @@ resamp1 <-
                             "Demo+Tracking_news" = "3",
                             "Demo+Tracking_apps" = "4",
                             "Tracking" = "5",
-                            "Demo+Tracking" = "6"))
+                            "Demo+Tracking" = "6")) %>%
+  mutate(model = fct_relevel(model, "Tracking", after = 1))
 
-p_resamp_v <- resamp1 %>%
-  ggplot() +
+ggplot(resamp1) +
   geom_boxplot(aes(y = ROC, x = fct_rev(model), fill = model)) +
   ylim(0, 1) +
   labs(x = "") +
   labs(y = "ROC-AUC") +
   coord_flip() + 
-  scale_fill_manual(values = c("#F8766D", "#00BA38", "#00BA38", "#00BA38", "#619CFF", "#00BA38")) +
+  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
+ggsave("p_resamp_v1.png", width = 7.5, height = 7)
 
-ggsave("p_resamp_v.png", p_resamp_v, width = 7.5, height = 7)
+ggplot(resamp1) +
+  geom_boxplot(aes(y = logLoss, x = fct_rev(model), fill = model)) +
+  ylim(0, 0.5) +
+  labs(x = "") +
+  labs(y = "logLoss") +
+  coord_flip() + 
+  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
+  theme(legend.position = "none") +
+  theme(text = element_text(size = 15))
+ggsave("p_resamp_v2.png", width = 7.5, height = 7)
+
+difresamps1 <- diff(resamps1)
+summary(difresamps1)$table$ROC
+summary(difresamps1)$table$logLoss
 
 # CV plot - AFD
 
@@ -971,20 +938,34 @@ resamp2 <-
                             "Demo+Tracking_news" = "3",
                             "Demo+Tracking_apps" = "4",
                             "Tracking" = "5",
-                            "Demo+Tracking" = "6"))
+                            "Demo+Tracking" = "6")) %>%
+  mutate(model = fct_relevel(model, "Tracking", after = 1))
 
-p_resamp_a <- resamp2 %>%
-  ggplot() +
+ggplot(resamp2) +
   geom_boxplot(aes(y = ROC, x = fct_rev(model), fill = model)) +
   ylim(0, 1) +
   labs(x = "") +
   labs(y = "ROC-AUC") +
   coord_flip() + 
-  scale_fill_manual(values = c("#F8766D", "#00BA38", "#00BA38", "#00BA38", "#619CFF", "#00BA38")) +
+  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
+ggsave("p_resamp_a1.png", width = 7.5, height = 7)
 
-ggsave("p_resamp_a.png", p_resamp_a, width = 7.5, height = 7)
+ggplot(resamp2) +
+  geom_boxplot(aes(y = logLoss, x = fct_rev(model), fill = model)) +
+  ylim(0, 0.5) +
+  labs(x = "") +
+  labs(y = "logLoss") +
+  coord_flip() + 
+  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
+  theme(legend.position = "none") +
+  theme(text = element_text(size = 15))
+ggsave("p_resamp_a2.png", width = 7.5, height = 7)
+
+difresamps2 <- diff(resamps2)
+summary(difresamps2)$table$ROC
+summary(difresamps2)$table$logLoss
 
 # CV plot - LEFT
 
@@ -1008,20 +989,34 @@ resamp3 <-
                             "Demo+Tracking_news" = "3",
                             "Demo+Tracking_apps" = "4",
                             "Tracking" = "5",
-                            "Demo+Tracking" = "6"))
+                            "Demo+Tracking" = "6")) %>%
+  mutate(model = fct_relevel(model, "Tracking", after = 1))
 
-p_resamp_l <- resamp3 %>%
-  ggplot() +
+ggplot(resamp3) +
   geom_boxplot(aes(y = ROC, x = fct_rev(model), fill = model)) +
   ylim(0, 1) +
   labs(x = "") +
   labs(y = "ROC-AUC") +
   coord_flip() + 
-  scale_fill_manual(values = c("#F8766D", "#00BA38", "#00BA38", "#00BA38", "#619CFF", "#00BA38")) +
+  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
+ggsave("p_resamp_l1.png", width = 7.5, height = 7)
 
-ggsave("p_resamp_l.png", p_resamp_l, width = 7.5, height = 7)
+ggplot(resamp3) +
+  geom_boxplot(aes(y = logLoss, x = fct_rev(model), fill = model)) +
+  ylim(0, 0.5) +
+  labs(x = "") +
+  labs(y = "logLoss") +
+  coord_flip() + 
+  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
+  theme(legend.position = "none") +
+  theme(text = element_text(size = 15))
+ggsave("p_resamp_l2.png", width = 7.5, height = 7)
+
+difresamps3 <- diff(resamps3)
+summary(difresamps3)$table$ROC
+summary(difresamps3)$table$logLoss
 
 ##################################################################################
 # Predict in test data
