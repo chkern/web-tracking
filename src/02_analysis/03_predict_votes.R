@@ -15,7 +15,6 @@ library(rtf)
 # Set path
 setwd("Y:\\Respondi\\RESPONDI_w3\\")
 
-
 ##################################################################################
 # Prepare data
 ##################################################################################
@@ -787,7 +786,6 @@ eval(parse(text=paste("rf_l6 <- train(",model_l6,",
 rf_l6
 plot(rf_l6)
 
-
 ##################################################################################
 # Variable Importance
 ##################################################################################
@@ -1022,38 +1020,36 @@ summary(difresamps3)$table$logLoss
 # Predict in test data
 ##################################################################################
 
-X_back_track_test_v <- X_back_track_test[!is.na(X_back_track_test$voted),]
-p_xgb_v1 <- predict(xgb_v1, newdata = X_back_track_test_v, type = "prob")
-p_xgb_v2 <- predict(xgb_v2, newdata = X_back_track_test_v, type = "prob")
-p_xgb_v3 <- predict(xgb_v3, newdata = X_back_track_test_v, type = "prob")
-p_xgb_v4 <- predict(xgb_v4, newdata = X_back_track_test_v, type = "prob")
-p_xgb_v5 <- predict(xgb_v5, newdata = X_back_track_test_v, type = "prob")
-p_xgb_v6 <- predict(xgb_v6, newdata = X_back_track_test_v, type = "prob")
+# X_back_track_test_v <- X_back_track_test[!is.na(X_back_track_test$voted),]
+p_xgb_v1 <- predict(xgb_v1, newdata = X_back_track_test, type = "prob")
+p_xgb_v2 <- predict(xgb_v2, newdata = X_back_track_test, type = "prob")
+p_xgb_v3 <- predict(xgb_v3, newdata = X_back_track_test, type = "prob")
+p_xgb_v4 <- predict(xgb_v4, newdata = X_back_track_test, type = "prob")
+p_xgb_v5 <- predict(xgb_v5, newdata = X_back_track_test, type = "prob")
+p_xgb_v6 <- predict(xgb_v6, newdata = X_back_track_test, type = "prob")
 
-X_back_track_test_a <- X_back_track_test[!is.na(X_back_track_test$AFD),]
-p_xgb_a1 <- predict(xgb_a1, newdata = X_back_track_test_a, type = "prob")
-p_xgb_a2 <- predict(xgb_a2, newdata = X_back_track_test_a, type = "prob")
-p_xgb_a3 <- predict(xgb_a3, newdata = X_back_track_test_a, type = "prob")
-p_xgb_a4 <- predict(xgb_a4, newdata = X_back_track_test_a, type = "prob")
-p_xgb_a5 <- predict(xgb_a5, newdata = X_back_track_test_a, type = "prob")
-p_xgb_a6 <- predict(xgb_a6, newdata = X_back_track_test_a, type = "prob")
+p_xgb_a1 <- predict(xgb_a1, newdata = X_back_track_test, type = "prob")
+p_xgb_a2 <- predict(xgb_a2, newdata = X_back_track_test, type = "prob")
+p_xgb_a3 <- predict(xgb_a3, newdata = X_back_track_test, type = "prob")
+p_xgb_a4 <- predict(xgb_a4, newdata = X_back_track_test, type = "prob")
+p_xgb_a5 <- predict(xgb_a5, newdata = X_back_track_test, type = "prob")
+p_xgb_a6 <- predict(xgb_a6, newdata = X_back_track_test, type = "prob")
 
-X_back_track_test_l <- X_back_track_test[!is.na(X_back_track_test$LEFT),]
-p_xgb_l1 <- predict(xgb_l1, newdata = X_back_track_test_l, type = "prob")
-p_xgb_l2 <- predict(xgb_l2, newdata = X_back_track_test_l, type = "prob")
-p_xgb_l3 <- predict(xgb_l3, newdata = X_back_track_test_l, type = "prob")
-p_xgb_l4 <- predict(xgb_l4, newdata = X_back_track_test_l, type = "prob")
-p_xgb_l5 <- predict(xgb_l5, newdata = X_back_track_test_l, type = "prob")
-p_xgb_l6 <- predict(xgb_l6, newdata = X_back_track_test_l, type = "prob")
+p_xgb_l1 <- predict(xgb_l1, newdata = X_back_track_test, type = "prob")
+p_xgb_l2 <- predict(xgb_l2, newdata = X_back_track_test, type = "prob")
+p_xgb_l3 <- predict(xgb_l3, newdata = X_back_track_test, type = "prob")
+p_xgb_l4 <- predict(xgb_l4, newdata = X_back_track_test, type = "prob")
+p_xgb_l5 <- predict(xgb_l5, newdata = X_back_track_test, type = "prob")
+p_xgb_l6 <- predict(xgb_l6, newdata = X_back_track_test, type = "prob")
 
 # ROC curves - voted
 
-roc_xgb_v1 <- roc(response = X_back_track_test_v$voted, predictor = p_xgb_v1$voted)
-roc_xgb_v2 <- roc(response = X_back_track_test_v$voted, predictor = p_xgb_v2$voted)
-roc_xgb_v3 <- roc(response = X_back_track_test_v$voted, predictor = p_xgb_v3$voted)
-roc_xgb_v4 <- roc(response = X_back_track_test_v$voted, predictor = p_xgb_v4$voted)
-roc_xgb_v5 <- roc(response = X_back_track_test_v$voted, predictor = p_xgb_v5$voted)
-roc_xgb_v6 <- roc(response = X_back_track_test_v$voted, predictor = p_xgb_v6$voted)
+roc_xgb_v1 <- roc(response = X_back_track_test$voted, predictor = p_xgb_v1$voted)
+roc_xgb_v2 <- roc(response = X_back_track_test$voted, predictor = p_xgb_v2$voted)
+roc_xgb_v3 <- roc(response = X_back_track_test$voted, predictor = p_xgb_v3$voted)
+roc_xgb_v4 <- roc(response = X_back_track_test$voted, predictor = p_xgb_v4$voted)
+roc_xgb_v5 <- roc(response = X_back_track_test$voted, predictor = p_xgb_v5$voted)
+roc_xgb_v6 <- roc(response = X_back_track_test$voted, predictor = p_xgb_v6$voted)
 
 ggroc(list("Demo" = roc_xgb_v1, "Tracking" = roc_xgb_v5, "Demo+Tracking" = roc_xgb_v6)) +
   geom_abline(aes(intercept = 1, slope = 1)) +
@@ -1064,12 +1060,12 @@ ggsave("p_roc_v.png", width = 7.5, height = 6)
 
 # ROC curves - AFD
 
-roc_xgb_a1 <- roc(response = X_back_track_test_a$AFD, predictor = p_xgb_a1$AFD)
-roc_xgb_a2 <- roc(response = X_back_track_test_a$AFD, predictor = p_xgb_a2$AFD)
-roc_xgb_a3 <- roc(response = X_back_track_test_a$AFD, predictor = p_xgb_a3$AFD)
-roc_xgb_a4 <- roc(response = X_back_track_test_a$AFD, predictor = p_xgb_a4$AFD)
-roc_xgb_a5 <- roc(response = X_back_track_test_a$AFD, predictor = p_xgb_a5$AFD)
-roc_xgb_a6 <- roc(response = X_back_track_test_a$AFD, predictor = p_xgb_a6$AFD)
+roc_xgb_a1 <- roc(response = X_back_track_test$AFD, predictor = p_xgb_a1$AFD)
+roc_xgb_a2 <- roc(response = X_back_track_test$AFD, predictor = p_xgb_a2$AFD)
+roc_xgb_a3 <- roc(response = X_back_track_test$AFD, predictor = p_xgb_a3$AFD)
+roc_xgb_a4 <- roc(response = X_back_track_test$AFD, predictor = p_xgb_a4$AFD)
+roc_xgb_a5 <- roc(response = X_back_track_test$AFD, predictor = p_xgb_a5$AFD)
+roc_xgb_a6 <- roc(response = X_back_track_test$AFD, predictor = p_xgb_a6$AFD)
 
 ggroc(list("Demo" = roc_xgb_a1, "Tracking" = roc_xgb_a5, "Demo+Tracking" = roc_xgb_a6)) +
   geom_abline(aes(intercept = 1, slope = 1)) +
@@ -1080,12 +1076,12 @@ ggsave("p_roc_a.png", width = 7.5, height = 6)
 
 # ROC curves - LEFT
 
-roc_xgb_l1 <- roc(response = X_back_track_test_l$LEFT, predictor = p_xgb_l1$LEFT)
-roc_xgb_l2 <- roc(response = X_back_track_test_l$LEFT, predictor = p_xgb_l2$LEFT)
-roc_xgb_l3 <- roc(response = X_back_track_test_l$LEFT, predictor = p_xgb_l3$LEFT)
-roc_xgb_l4 <- roc(response = X_back_track_test_l$LEFT, predictor = p_xgb_l4$LEFT)
-roc_xgb_l5 <- roc(response = X_back_track_test_l$LEFT, predictor = p_xgb_l5$LEFT)
-roc_xgb_l6 <- roc(response = X_back_track_test_l$LEFT, predictor = p_xgb_l6$LEFT)
+roc_xgb_l1 <- roc(response = X_back_track_test$LEFT, predictor = p_xgb_l1$LEFT)
+roc_xgb_l2 <- roc(response = X_back_track_test$LEFT, predictor = p_xgb_l2$LEFT)
+roc_xgb_l3 <- roc(response = X_back_track_test$LEFT, predictor = p_xgb_l3$LEFT)
+roc_xgb_l4 <- roc(response = X_back_track_test$LEFT, predictor = p_xgb_l4$LEFT)
+roc_xgb_l5 <- roc(response = X_back_track_test$LEFT, predictor = p_xgb_l5$LEFT)
+roc_xgb_l6 <- roc(response = X_back_track_test$LEFT, predictor = p_xgb_l6$LEFT)
 
 ggroc(list("Demo" = roc_xgb_l1, "Tracking" = roc_xgb_l5, "Demo+Tracking" = roc_xgb_l6)) +
   geom_abline(aes(intercept = 1, slope = 1)) +
@@ -1104,19 +1100,19 @@ roc_xgb_v4_t <- coords(roc_xgb_v4, x = "best", best.method = "closest.topleft", 
 roc_xgb_v5_t <- coords(roc_xgb_v5, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.9))
 roc_xgb_v6_t <- coords(roc_xgb_v6, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.9))
 
-c_xgb_v1 <- as.factor(ifelse(p_xgb_v1$voted > roc_xgb_v1_t[1], "voted", "not_voted"))
-c_xgb_v2 <- as.factor(ifelse(p_xgb_v2$voted > roc_xgb_v2_t[1], "voted", "not_voted"))
-c_xgb_v3 <- as.factor(ifelse(p_xgb_v3$voted > roc_xgb_v3_t[1], "voted", "not_voted"))
-c_xgb_v4 <- as.factor(ifelse(p_xgb_v4$voted > roc_xgb_v4_t[1], "voted", "not_voted"))
-c_xgb_v5 <- as.factor(ifelse(p_xgb_v5$voted > roc_xgb_v5_t[1], "voted", "not_voted"))
-c_xgb_v6 <- as.factor(ifelse(p_xgb_v6$voted > roc_xgb_v6_t[1], "voted", "not_voted"))
+c_xgb_v1 <- as.factor(ifelse(p_xgb_v1$voted > roc_xgb_v1_t[[1]], "voted", "not_voted"))
+c_xgb_v2 <- as.factor(ifelse(p_xgb_v2$voted > roc_xgb_v2_t[[1]], "voted", "not_voted"))
+c_xgb_v3 <- as.factor(ifelse(p_xgb_v3$voted > roc_xgb_v3_t[[1]], "voted", "not_voted"))
+c_xgb_v4 <- as.factor(ifelse(p_xgb_v4$voted > roc_xgb_v4_t[[1]], "voted", "not_voted"))
+c_xgb_v5 <- as.factor(ifelse(p_xgb_v5$voted > roc_xgb_v5_t[[1]], "voted", "not_voted"))
+c_xgb_v6 <- as.factor(ifelse(p_xgb_v6$voted > roc_xgb_v6_t[[1]], "voted", "not_voted"))
 
-cm1 <- confusionMatrix(c_xgb_v1, X_back_track_test_v$voted, positive = "not_voted", mode = "everything")
-cm2 <- confusionMatrix(c_xgb_v2, X_back_track_test_v$voted, positive = "not_voted", mode = "everything")
-cm3 <- confusionMatrix(c_xgb_v3, X_back_track_test_v$voted, positive = "not_voted", mode = "everything")
-cm4 <- confusionMatrix(c_xgb_v4, X_back_track_test_v$voted, positive = "not_voted", mode = "everything")
-cm5 <- confusionMatrix(c_xgb_v5, X_back_track_test_v$voted, positive = "not_voted", mode = "everything")
-cm6 <- confusionMatrix(c_xgb_v6, X_back_track_test_v$voted, positive = "not_voted", mode = "everything")
+cm1 <- confusionMatrix(c_xgb_v1, X_back_track_test$voted, positive = "not_voted", mode = "everything")
+cm2 <- confusionMatrix(c_xgb_v2, X_back_track_test$voted, positive = "not_voted", mode = "everything")
+cm3 <- confusionMatrix(c_xgb_v3, X_back_track_test$voted, positive = "not_voted", mode = "everything")
+cm4 <- confusionMatrix(c_xgb_v4, X_back_track_test$voted, positive = "not_voted", mode = "everything")
+cm5 <- confusionMatrix(c_xgb_v5, X_back_track_test$voted, positive = "not_voted", mode = "everything")
+cm6 <- confusionMatrix(c_xgb_v6, X_back_track_test$voted, positive = "not_voted", mode = "everything")
 
 Demo <- c(cm1$overall[1], cm1$byClass[c(1:2,5,7)], cm1$overall[2])
 Demo_Tracking_general <- c(cm2$overall[1], cm2$byClass[c(1:2,5,7)], cm2$overall[2])
@@ -1142,19 +1138,19 @@ roc_xgb_a4_t <- coords(roc_xgb_a4, x = "best", best.method = "closest.topleft", 
 roc_xgb_a5_t <- coords(roc_xgb_a5, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
 roc_xgb_a6_t <- coords(roc_xgb_a6, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
 
-c_xgb_a1 <- as.factor(ifelse(p_xgb_a1$AFD > roc_xgb_a1_t[1], "AFD", "not_AFD"))
-c_xgb_a2 <- as.factor(ifelse(p_xgb_a2$AFD > roc_xgb_a2_t[1], "AFD", "not_AFD"))
-c_xgb_a3 <- as.factor(ifelse(p_xgb_a3$AFD > roc_xgb_a3_t[1], "AFD", "not_AFD"))
-c_xgb_a4 <- as.factor(ifelse(p_xgb_a4$AFD > roc_xgb_a4_t[1], "AFD", "not_AFD"))
-c_xgb_a5 <- as.factor(ifelse(p_xgb_a5$AFD > roc_xgb_a5_t[1], "AFD", "not_AFD"))
-c_xgb_a6 <- as.factor(ifelse(p_xgb_a6$AFD > roc_xgb_a6_t[1], "AFD", "not_AFD"))
+c_xgb_a1 <- as.factor(ifelse(p_xgb_a1$AFD > roc_xgb_a1_t[[1]], "AFD", "not_AFD"))
+c_xgb_a2 <- as.factor(ifelse(p_xgb_a2$AFD > roc_xgb_a2_t[[1]], "AFD", "not_AFD"))
+c_xgb_a3 <- as.factor(ifelse(p_xgb_a3$AFD > roc_xgb_a3_t[[1]], "AFD", "not_AFD"))
+c_xgb_a4 <- as.factor(ifelse(p_xgb_a4$AFD > roc_xgb_a4_t[[1]], "AFD", "not_AFD"))
+c_xgb_a5 <- as.factor(ifelse(p_xgb_a5$AFD > roc_xgb_a5_t[[1]], "AFD", "not_AFD"))
+c_xgb_a6 <- as.factor(ifelse(p_xgb_a6$AFD > roc_xgb_a6_t[[1]], "AFD", "not_AFD"))
 
-cm1 <- confusionMatrix(c_xgb_a1, X_back_track_test_a$AFD, positive = "AFD", mode = "everything")
-cm2 <- confusionMatrix(c_xgb_a2, X_back_track_test_a$AFD, positive = "AFD", mode = "everything")
-cm3 <- confusionMatrix(c_xgb_a3, X_back_track_test_a$AFD, positive = "AFD", mode = "everything")
-cm4 <- confusionMatrix(c_xgb_a4, X_back_track_test_a$AFD, positive = "AFD", mode = "everything")
-cm5 <- confusionMatrix(c_xgb_a5, X_back_track_test_a$AFD, positive = "AFD", mode = "everything")
-cm6 <- confusionMatrix(c_xgb_a6, X_back_track_test_a$AFD, positive = "AFD", mode = "everything")
+cm1 <- confusionMatrix(c_xgb_a1, X_back_track_test$AFD, positive = "AFD", mode = "everything")
+cm2 <- confusionMatrix(c_xgb_a2, X_back_track_test$AFD, positive = "AFD", mode = "everything")
+cm3 <- confusionMatrix(c_xgb_a3, X_back_track_test$AFD, positive = "AFD", mode = "everything")
+cm4 <- confusionMatrix(c_xgb_a4, X_back_track_test$AFD, positive = "AFD", mode = "everything")
+cm5 <- confusionMatrix(c_xgb_a5, X_back_track_test$AFD, positive = "AFD", mode = "everything")
+cm6 <- confusionMatrix(c_xgb_a6, X_back_track_test$AFD, positive = "AFD", mode = "everything")
 
 Demo <- c(cm1$overall[1], cm1$byClass[c(1:2,5,7)], cm1$overall[2])
 Demo_Tracking_general <- c(cm2$overall[1], cm2$byClass[c(1:2,5,7)], cm2$overall[2])
@@ -1180,19 +1176,19 @@ roc_xgb_l4_t <- coords(roc_xgb_l4, x = "best", best.method = "closest.topleft", 
 roc_xgb_l5_t <- coords(roc_xgb_l5, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
 roc_xgb_l6_t <- coords(roc_xgb_l6, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.15))
 
-c_xgb_l1 <- as.factor(ifelse(p_xgb_l1$LEFT > roc_xgb_l1_t[1], "LEFT", "not_LEFT"))
-c_xgb_l2 <- as.factor(ifelse(p_xgb_l2$LEFT > roc_xgb_l2_t[1], "LEFT", "not_LEFT"))
-c_xgb_l3 <- as.factor(ifelse(p_xgb_l3$LEFT > roc_xgb_l3_t[1], "LEFT", "not_LEFT"))
-c_xgb_l4 <- as.factor(ifelse(p_xgb_l4$LEFT > roc_xgb_l4_t[1], "LEFT", "not_LEFT"))
-c_xgb_l5 <- as.factor(ifelse(p_xgb_l5$LEFT > roc_xgb_l5_t[1], "LEFT", "not_LEFT"))
-c_xgb_l6 <- as.factor(ifelse(p_xgb_l6$LEFT > roc_xgb_l6_t[1], "LEFT", "not_LEFT"))
+c_xgb_l1 <- as.factor(ifelse(p_xgb_l1$LEFT > roc_xgb_l1_t[[1]], "LEFT", "not_LEFT"))
+c_xgb_l2 <- as.factor(ifelse(p_xgb_l2$LEFT > roc_xgb_l2_t[[1]], "LEFT", "not_LEFT"))
+c_xgb_l3 <- as.factor(ifelse(p_xgb_l3$LEFT > roc_xgb_l3_t[[1]], "LEFT", "not_LEFT"))
+c_xgb_l4 <- as.factor(ifelse(p_xgb_l4$LEFT > roc_xgb_l4_t[[1]], "LEFT", "not_LEFT"))
+c_xgb_l5 <- as.factor(ifelse(p_xgb_l5$LEFT > roc_xgb_l5_t[[1]], "LEFT", "not_LEFT"))
+c_xgb_l6 <- as.factor(ifelse(p_xgb_l6$LEFT > roc_xgb_l6_t[[1]], "LEFT", "not_LEFT"))
 
-cm1 <- confusionMatrix(c_xgb_l1, X_back_track_test_l$LEFT, positive = "LEFT", mode = "everything")
-cm2 <- confusionMatrix(c_xgb_l2, X_back_track_test_l$LEFT, positive = "LEFT", mode = "everything")
-cm3 <- confusionMatrix(c_xgb_l3, X_back_track_test_l$LEFT, positive = "LEFT", mode = "everything")
-cm4 <- confusionMatrix(c_xgb_l4, X_back_track_test_l$LEFT, positive = "LEFT", mode = "everything")
-cm5 <- confusionMatrix(c_xgb_l5, X_back_track_test_l$LEFT, positive = "LEFT", mode = "everything")
-cm6 <- confusionMatrix(c_xgb_l6, X_back_track_test_l$LEFT, positive = "LEFT", mode = "everything")
+cm1 <- confusionMatrix(c_xgb_l1, X_back_track_test$LEFT, positive = "LEFT", mode = "everything")
+cm2 <- confusionMatrix(c_xgb_l2, X_back_track_test$LEFT, positive = "LEFT", mode = "everything")
+cm3 <- confusionMatrix(c_xgb_l3, X_back_track_test$LEFT, positive = "LEFT", mode = "everything")
+cm4 <- confusionMatrix(c_xgb_l4, X_back_track_test$LEFT, positive = "LEFT", mode = "everything")
+cm5 <- confusionMatrix(c_xgb_l5, X_back_track_test$LEFT, positive = "LEFT", mode = "everything")
+cm6 <- confusionMatrix(c_xgb_l6, X_back_track_test$LEFT, positive = "LEFT", mode = "everything")
 
 Demo <- c(cm1$overall[1], cm1$byClass[c(1:2,5,7)], cm1$overall[2])
 Demo_Tracking_general <- c(cm2$overall[1], cm2$byClass[c(1:2,5,7)], cm2$overall[2])
@@ -1207,3 +1203,51 @@ tab
 rtffile <- RTF("t_perf_l.doc")
 addTable(rtffile, cbind(rownames(tab),round(tab, digits = 3)))
 done(rtffile)
+
+##################################################################################
+# Predict in test data by subgroups
+##################################################################################
+
+# add party affiliation
+Yadd3 <- select(survey_w3, party_affiliation, panelist_id)
+Yadd3$party_affiliation <- as.factor(Yadd3$party_affiliation)
+levels(Yadd3$party_affiliation) <- c("CDU","SPD","GREEN","FDP","LEFT","AFD","Other")
+
+X_back_track_test <- left_join(X_back_track_test, Yadd3, by = c("panelistid" = "panelist_id"))
+
+# add undecided from wave 2
+setwd("Y:\\Respondi\\RESPONDI_w2\\")
+survey_w2 <- read_dta(file = "./survey_daten/survey_data_w2.dta")
+Yadd2 <- select(survey_w2, undecided, panelist_id)
+Yadd2$undecided <- as.factor(Yadd2$undecided)
+levels(Yadd2$undecided) <- c("decided", "undecided")
+
+X_back_track_test <- left_join(X_back_track_test, Yadd2, by = c("panelistid" = "panelist_id"))
+
+# AFD by undecided
+confusionMatrix(c_xgb_a1[X_back_track_test$undecided == "decided"], X_back_track_test$AFD[X_back_track_test$undecided == "decided"], positive = "AFD", mode = "everything")
+confusionMatrix(c_xgb_a1[X_back_track_test$undecided == "undecided"], X_back_track_test$AFD[X_back_track_test$undecided == "undecided"], positive = "AFD", mode = "everything")
+confusionMatrix(c_xgb_a6[X_back_track_test$undecided == "decided"], X_back_track_test$AFD[X_back_track_test$undecided == "decided"], positive = "AFD", mode = "everything")
+confusionMatrix(c_xgb_a6[X_back_track_test$undecided == "undecided"], X_back_track_test$AFD[X_back_track_test$undecided == "undecided"], positive = "AFD", mode = "everything")
+
+# LEFT by undecided
+confusionMatrix(c_xgb_l1[X_back_track_test$undecided == "decided"], X_back_track_test$LEFT[X_back_track_test$undecided == "decided"], positive = "LEFT", mode = "everything")
+confusionMatrix(c_xgb_l1[X_back_track_test$undecided == "undecided"], X_back_track_test$LEFT[X_back_track_test$undecided == "undecided"], positive = "LEFT", mode = "everything")
+confusionMatrix(c_xgb_l6[X_back_track_test$undecided == "decided"], X_back_track_test$LEFT[X_back_track_test$undecided == "decided"], positive = "LEFT", mode = "everything")
+confusionMatrix(c_xgb_l6[X_back_track_test$undecided == "undecided"], X_back_track_test$LEFT[X_back_track_test$undecided == "undecided"], positive = "LEFT", mode = "everything")
+
+# AFD by voting
+addmargins(prop.table(table(c_xgb_a1, X_back_track_test$voted), 2))
+addmargins(prop.table(table(c_xgb_a6, X_back_track_test$voted), 2))
+
+# LEFT by voting
+addmargins(prop.table(table(c_xgb_l1, X_back_track_test$voted), 2))
+addmargins(prop.table(table(c_xgb_l6, X_back_track_test$voted), 2))
+
+# party affiliation by AFD
+addmargins(prop.table(table(c_xgb_a1, X_back_track_test$party_affiliation), 1))
+addmargins(prop.table(table(c_xgb_a6, X_back_track_test$party_affiliation), 1))
+
+# party affiliation by LEFT
+addmargins(prop.table(table(c_xgb_l1, X_back_track_test$party_affiliation), 1))
+addmargins(prop.table(table(c_xgb_l6, X_back_track_test$party_affiliation), 1))
