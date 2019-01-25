@@ -824,7 +824,7 @@ imp_xgb_a6 <-
   mutate(order = 11 - row_number())
 
 match(imp_xgb_a6$varname, names(X_back_track_train))
-# imp_xgb_a6$varname <- c("Tracking fake", "Demo: High school degree", "Tracking domain", "Demo: Gender", "Tracking domain", "Tracking domain", "Tracking domain", "Tracking domain", "Tracking domain", "Tracking domain")
+imp_xgb_a6$varname <- c("Fake rel. d", "High school degree", "deref-web-02.de", "ebay.de", "Age", "hclips.com", "dropbox.com", "ikea.com", "eventim.de", "Gender")
 
 ggplot(imp_xgb_a6) +
   geom_point(aes(x = Overall, y = order)) + 
@@ -847,7 +847,7 @@ imp_xgb_l6 <-
   mutate(order = 11 - row_number())
 
 match(imp_xgb_l6$varname, names(X_back_track_train))
-# imp_xgb_l6$varname <- c("Tracking domain", "Tracking fake", "Tracking news", "Tracking apps", "Tracking domain", "Tracking domain", "Tracking domain", "Tracking apps", "Tracking apps", "Tracking domain")
+imp_xgb_l6$varname <- c("vice.com", "DB Navigator", "twitter.com", "dict.cc", "zeit.de", "kinox.to", "Fb rel n", "Video", "tvmovie.de", "wikimedia.org")
 
 ggplot(imp_xgb_l6) +
   geom_point(aes(x = Overall, y = order)) + 
@@ -901,7 +901,7 @@ ggsave("p_resamp_v1.png", width = 7.5, height = 7)
 
 ggplot(resamp1) +
   geom_boxplot(aes(y = logLoss, x = fct_rev(model), fill = model)) +
-  ylim(0, 0.5) +
+  ylim(0.2, 0.5) +
   labs(x = "") +
   labs(y = "logLoss") +
   coord_flip() + 
@@ -952,7 +952,7 @@ ggsave("p_resamp_a1.png", width = 7.5, height = 7)
 
 ggplot(resamp2) +
   geom_boxplot(aes(y = logLoss, x = fct_rev(model), fill = model)) +
-  ylim(0, 0.5) +
+  ylim(0.2, 0.5) +
   labs(x = "") +
   labs(y = "logLoss") +
   coord_flip() + 
@@ -1003,7 +1003,7 @@ ggsave("p_resamp_l1.png", width = 7.5, height = 7)
 
 ggplot(resamp3) +
   geom_boxplot(aes(y = logLoss, x = fct_rev(model), fill = model)) +
-  ylim(0, 0.5) +
+  ylim(0.2, 0.5) +
   labs(x = "") +
   labs(y = "logLoss") +
   coord_flip() + 
@@ -1042,7 +1042,7 @@ p_xgb_l4 <- predict(xgb_l4, newdata = X_back_track_test, type = "prob")
 p_xgb_l5 <- predict(xgb_l5, newdata = X_back_track_test, type = "prob")
 p_xgb_l6 <- predict(xgb_l6, newdata = X_back_track_test, type = "prob")
 
-# ROC curves - voted
+# ROC and LogLoss - voted
 
 roc_xgb_v1 <- roc(response = X_back_track_test$voted, predictor = p_xgb_v1$voted)
 roc_xgb_v2 <- roc(response = X_back_track_test$voted, predictor = p_xgb_v2$voted)
@@ -1054,11 +1054,45 @@ roc_xgb_v6 <- roc(response = X_back_track_test$voted, predictor = p_xgb_v6$voted
 ggroc(list("Demo" = roc_xgb_v1, "Tracking" = roc_xgb_v5, "Demo+Tracking" = roc_xgb_v6)) +
   geom_abline(aes(intercept = 1, slope = 1)) +
   scale_colour_manual(name = "", values = c("#F8766D", "#00BA38", "#619CFF"),
-                      breaks = c("Demo", "Tracking", "Demo+Tracking"))
+                      breaks = c("Demo", "Tracking", "Demo+Tracking")) +
+  theme(text = element_text(size = 13))
 
 ggsave("p_roc_v.png", width = 7.5, height = 6)
 
-# ROC curves - AFD
+p_xgb_v1$obs <- X_back_track_test$voted
+p_xgb_v1$pred <- predict(xgb_v1, newdata = X_back_track_test)
+p_xgb_v2$obs <- X_back_track_test$voted
+p_xgb_v2$pred <- predict(xgb_v2, newdata = X_back_track_test)
+p_xgb_v3$obs <- X_back_track_test$voted
+p_xgb_v3$pred <- predict(xgb_v3, newdata = X_back_track_test)
+p_xgb_v4$obs <- X_back_track_test$voted
+p_xgb_v4$pred <- predict(xgb_v4, newdata = X_back_track_test)
+p_xgb_v5$obs <- X_back_track_test$voted
+p_xgb_v5$pred <- predict(xgb_v5, newdata = X_back_track_test)
+p_xgb_v6$obs <- X_back_track_test$voted
+p_xgb_v6$pred <- predict(xgb_v6, newdata = X_back_track_test)
+
+perf_v1 <- cbind(twoClassSummary(drop_na(p_xgb_v1), lev = levels(p_xgb_v1$obs))[[1]],
+                 mnLogLoss(p_xgb_v1, lev = levels(p_xgb_v1$obs))[[1]])
+perf_v2 <- cbind(twoClassSummary(drop_na(p_xgb_v2), lev = levels(p_xgb_v2$obs))[[1]],
+                 mnLogLoss(p_xgb_v2, lev = levels(p_xgb_v2$obs))[[1]])
+perf_v3 <- cbind(twoClassSummary(drop_na(p_xgb_v3), lev = levels(p_xgb_v3$obs))[[1]],
+                 mnLogLoss(p_xgb_v3, lev = levels(p_xgb_v3$obs))[[1]])
+perf_v4 <- cbind(twoClassSummary(drop_na(p_xgb_v4), lev = levels(p_xgb_v4$obs))[[1]],
+                 mnLogLoss(p_xgb_v4, lev = levels(p_xgb_v4$obs))[[1]])
+perf_v5 <- cbind(twoClassSummary(drop_na(p_xgb_v5), lev = levels(p_xgb_v5$obs))[[1]],
+                 mnLogLoss(p_xgb_v5, lev = levels(p_xgb_v5$obs))[[1]])
+perf_v6 <- cbind(twoClassSummary(drop_na(p_xgb_v6), lev = levels(p_xgb_v6$obs))[[1]],
+                 mnLogLoss(p_xgb_v6, lev = levels(p_xgb_v6$obs))[[1]])
+
+tab <- rbind(perf_v1, perf_v2, perf_v3, perf_v4, perf_v5, perf_v6)
+tab
+
+rtffile <- RTF("perf_v.doc")
+addTable(rtffile, round(tab, digits = 3))
+done(rtffile)
+
+# ROC and LogLoss - AFD
 
 roc_xgb_a1 <- roc(response = X_back_track_test$AFD, predictor = p_xgb_a1$AFD)
 roc_xgb_a2 <- roc(response = X_back_track_test$AFD, predictor = p_xgb_a2$AFD)
@@ -1070,11 +1104,45 @@ roc_xgb_a6 <- roc(response = X_back_track_test$AFD, predictor = p_xgb_a6$AFD)
 ggroc(list("Demo" = roc_xgb_a1, "Tracking" = roc_xgb_a5, "Demo+Tracking" = roc_xgb_a6)) +
   geom_abline(aes(intercept = 1, slope = 1)) +
   scale_colour_manual(name = "", values = c("#F8766D", "#00BA38", "#619CFF"),
-                      breaks = c("Demo", "Tracking", "Demo+Tracking"))
+                      breaks = c("Demo", "Tracking", "Demo+Tracking")) +
+  theme(text = element_text(size = 13))
 
 ggsave("p_roc_a.png", width = 7.5, height = 6)
 
-# ROC curves - LEFT
+p_xgb_a1$obs <- X_back_track_test$AFD
+p_xgb_a1$pred <- predict(xgb_a1, newdata = X_back_track_test)
+p_xgb_a2$obs <- X_back_track_test$AFD
+p_xgb_a2$pred <- predict(xgb_a2, newdata = X_back_track_test)
+p_xgb_a3$obs <- X_back_track_test$AFD
+p_xgb_a3$pred <- predict(xgb_a3, newdata = X_back_track_test)
+p_xgb_a4$obs <- X_back_track_test$AFD
+p_xgb_a4$pred <- predict(xgb_a4, newdata = X_back_track_test)
+p_xgb_a5$obs <- X_back_track_test$AFD
+p_xgb_a5$pred <- predict(xgb_a5, newdata = X_back_track_test)
+p_xgb_a6$obs <- X_back_track_test$AFD
+p_xgb_a6$pred <- predict(xgb_a6, newdata = X_back_track_test)
+
+perf_a1 <- cbind(twoClassSummary(drop_na(p_xgb_a1), lev = levels(p_xgb_a1$obs))[[1]],
+                 mnLogLoss(p_xgb_a1, lev = levels(p_xgb_a1$obs))[[1]])
+perf_a2 <- cbind(twoClassSummary(drop_na(p_xgb_a2), lev = levels(p_xgb_a2$obs))[[1]],
+                 mnLogLoss(p_xgb_a2, lev = levels(p_xgb_a2$obs))[[1]])
+perf_a3 <- cbind(twoClassSummary(drop_na(p_xgb_a3), lev = levels(p_xgb_a3$obs))[[1]],
+                 mnLogLoss(p_xgb_a3, lev = levels(p_xgb_a3$obs))[[1]])
+perf_a4 <- cbind(twoClassSummary(drop_na(p_xgb_a4), lev = levels(p_xgb_a4$obs))[[1]],
+                 mnLogLoss(p_xgb_a4, lev = levels(p_xgb_a4$obs))[[1]])
+perf_a5 <- cbind(twoClassSummary(drop_na(p_xgb_a5), lev = levels(p_xgb_a5$obs))[[1]],
+                 mnLogLoss(p_xgb_a5, lev = levels(p_xgb_a5$obs))[[1]])
+perf_a6 <- cbind(twoClassSummary(drop_na(p_xgb_a6), lev = levels(p_xgb_a6$obs))[[1]],
+                 mnLogLoss(p_xgb_a6, lev = levels(p_xgb_a6$obs))[[1]])
+
+tab <- rbind(perf_a1, perf_a2, perf_a3, perf_a4, perf_a5, perf_a6)
+tab
+
+rtffile <- RTF("perf_a.doc")
+addTable(rtffile, round(tab, digits = 3))
+done(rtffile)
+
+# ROC and LogLoss - LEFT
 
 roc_xgb_l1 <- roc(response = X_back_track_test$LEFT, predictor = p_xgb_l1$LEFT)
 roc_xgb_l2 <- roc(response = X_back_track_test$LEFT, predictor = p_xgb_l2$LEFT)
@@ -1086,9 +1154,43 @@ roc_xgb_l6 <- roc(response = X_back_track_test$LEFT, predictor = p_xgb_l6$LEFT)
 ggroc(list("Demo" = roc_xgb_l1, "Tracking" = roc_xgb_l5, "Demo+Tracking" = roc_xgb_l6)) +
   geom_abline(aes(intercept = 1, slope = 1)) +
   scale_colour_manual(name = "", values = c("#F8766D", "#00BA38", "#619CFF"),
-                      breaks = c("Demo", "Tracking", "Demo+Tracking"))
+                      breaks = c("Demo", "Tracking", "Demo+Tracking")) +
+  theme(text = element_text(size = 13))
 
 ggsave("p_roc_l.png", width = 7.5, height = 6)
+
+p_xgb_l1$obs <- X_back_track_test$LEFT
+p_xgb_l1$pred <- predict(xgb_l1, newdata = X_back_track_test)
+p_xgb_l2$obs <- X_back_track_test$LEFT
+p_xgb_l2$pred <- predict(xgb_l2, newdata = X_back_track_test)
+p_xgb_l3$obs <- X_back_track_test$LEFT
+p_xgb_l3$pred <- predict(xgb_l3, newdata = X_back_track_test)
+p_xgb_l4$obs <- X_back_track_test$LEFT
+p_xgb_l4$pred <- predict(xgb_l4, newdata = X_back_track_test)
+p_xgb_l5$obs <- X_back_track_test$LEFT
+p_xgb_l5$pred <- predict(xgb_l5, newdata = X_back_track_test)
+p_xgb_l6$obs <- X_back_track_test$LEFT
+p_xgb_l6$pred <- predict(xgb_l6, newdata = X_back_track_test)
+
+perf_l1 <- cbind(twoClassSummary(drop_na(p_xgb_l1), lev = levels(p_xgb_l1$obs))[[1]],
+                 mnLogLoss(p_xgb_l1, lev = levels(p_xgb_l1$obs))[[1]])
+perf_l2 <- cbind(twoClassSummary(drop_na(p_xgb_l2), lev = levels(p_xgb_l2$obs))[[1]],
+                 mnLogLoss(p_xgb_l2, lev = levels(p_xgb_l2$obs))[[1]])
+perf_l3 <- cbind(twoClassSummary(drop_na(p_xgb_l3), lev = levels(p_xgb_l3$obs))[[1]],
+                 mnLogLoss(p_xgb_l3, lev = levels(p_xgb_l3$obs))[[1]])
+perf_l4 <- cbind(twoClassSummary(drop_na(p_xgb_l4), lev = levels(p_xgb_l4$obs))[[1]],
+                 mnLogLoss(p_xgb_l4, lev = levels(p_xgb_l4$obs))[[1]])
+perf_l5 <- cbind(twoClassSummary(drop_na(p_xgb_l5), lev = levels(p_xgb_l5$obs))[[1]],
+                 mnLogLoss(p_xgb_l5, lev = levels(p_xgb_l5$obs))[[1]])
+perf_l6 <- cbind(twoClassSummary(drop_na(p_xgb_l6), lev = levels(p_xgb_l6$obs))[[1]],
+                 mnLogLoss(p_xgb_l6, lev = levels(p_xgb_l6$obs))[[1]])
+
+tab <- rbind(perf_l1, perf_l2, perf_l3, perf_l4, perf_l5, perf_l6)
+tab
+
+rtffile <- RTF("perf_l.doc")
+addTable(rtffile, round(tab, digits = 3))
+done(rtffile)
 
 # Performance at "optimal" threshold - voted
 
@@ -1238,16 +1340,34 @@ confusionMatrix(c_xgb_l6[X_back_track_test$undecided == "undecided"], X_back_tra
 
 # AFD by voting
 addmargins(prop.table(table(c_xgb_a1, X_back_track_test$voted), 2))
+addmargins(prop.table(table(c_xgb_a5, X_back_track_test$voted), 2))
 addmargins(prop.table(table(c_xgb_a6, X_back_track_test$voted), 2))
 
 # LEFT by voting
 addmargins(prop.table(table(c_xgb_l1, X_back_track_test$voted), 2))
+addmargins(prop.table(table(c_xgb_l5, X_back_track_test$voted), 2))
 addmargins(prop.table(table(c_xgb_l6, X_back_track_test$voted), 2))
 
 # party affiliation by AFD
-addmargins(prop.table(table(c_xgb_a1, X_back_track_test$party_affiliation), 1))
-addmargins(prop.table(table(c_xgb_a6, X_back_track_test$party_affiliation), 1))
+tab1 <- rbind(table(c_xgb_a1, X_back_track_test$party_affiliation), prop.table(table(c_xgb_a1, X_back_track_test$party_affiliation), 1))
+tab2 <- rbind(table(c_xgb_a5, X_back_track_test$party_affiliation), prop.table(table(c_xgb_a5, X_back_track_test$party_affiliation), 1))
+tab3 <- rbind(table(c_xgb_a6, X_back_track_test$party_affiliation), prop.table(table(c_xgb_a6, X_back_track_test$party_affiliation), 1))
+
+tab <- rbind(tab1, tab2, tab3)
+tab
+
+rtffile <- RTF("parties_a.doc")
+addTable(rtffile, cbind(rownames(tab),round(tab, digits = 3)))
+done(rtffile)
 
 # party affiliation by LEFT
-addmargins(prop.table(table(c_xgb_l1, X_back_track_test$party_affiliation), 1))
-addmargins(prop.table(table(c_xgb_l6, X_back_track_test$party_affiliation), 1))
+tab1 <- rbind(table(c_xgb_l1, X_back_track_test$party_affiliation), prop.table(table(c_xgb_l1, X_back_track_test$party_affiliation), 1))
+tab2 <- rbind(table(c_xgb_l5, X_back_track_test$party_affiliation), prop.table(table(c_xgb_l5, X_back_track_test$party_affiliation), 1))
+tab3 <- rbind(table(c_xgb_l6, X_back_track_test$party_affiliation), prop.table(table(c_xgb_l6, X_back_track_test$party_affiliation), 1))
+
+tab <- rbind(tab1, tab2, tab3)
+tab
+
+rtffile <- RTF("parties_l.doc")
+addTable(rtffile, cbind(rownames(tab),round(tab, digits = 3)))
+done(rtffile)

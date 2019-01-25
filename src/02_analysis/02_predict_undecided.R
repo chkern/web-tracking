@@ -15,7 +15,6 @@ library(rtf)
 # Set path
 setwd("Y:\\Respondi\\RESPONDI_w2\\")
 
-
 ##################################################################################
 # Prepare data
 ##################################################################################
@@ -456,7 +455,7 @@ ggsave("p_resamp_u1.png", width = 7.5, height = 7)
 
 ggplot(resamp1) +
   geom_boxplot(aes(y = logLoss, x = fct_rev(model), fill = model)) +
-  ylim(0.25, 0.55) +
+  ylim(0.2, 0.55) +
   labs(x = "") +
   labs(y = "logLoss") +
   coord_flip() + 
@@ -473,29 +472,63 @@ summary(difresamps1)$table$logLoss
 # Predict in test data
 ##################################################################################
 
-X_back_track_test_u <- X_back_track_test[!is.na(X_back_track_test$undecided),]
-p_xgb_u1 <- predict(xgb_u1, newdata = X_back_track_test_u, type = "prob")
-p_xgb_u2 <- predict(xgb_u2, newdata = X_back_track_test_u, type = "prob")
-p_xgb_u3 <- predict(xgb_u3, newdata = X_back_track_test_u, type = "prob")
-p_xgb_u4 <- predict(xgb_u4, newdata = X_back_track_test_u, type = "prob")
-p_xgb_u5 <- predict(xgb_u5, newdata = X_back_track_test_u, type = "prob")
-p_xgb_u6 <- predict(xgb_u6, newdata = X_back_track_test_u, type = "prob")
+# X_back_track_test_u <- X_back_track_test[!is.na(X_back_track_test$undecided),]
+p_xgb_u1 <- predict(xgb_u1, newdata = X_back_track_test, type = "prob")
+p_xgb_u2 <- predict(xgb_u2, newdata = X_back_track_test, type = "prob")
+p_xgb_u3 <- predict(xgb_u3, newdata = X_back_track_test, type = "prob")
+p_xgb_u4 <- predict(xgb_u4, newdata = X_back_track_test, type = "prob")
+p_xgb_u5 <- predict(xgb_u5, newdata = X_back_track_test, type = "prob")
+p_xgb_u6 <- predict(xgb_u6, newdata = X_back_track_test, type = "prob")
 
-# ROC curves - Undecided
+# ROC and LogLoss - Undecided
 
-roc_xgb_u1 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u1$undecided)
-roc_xgb_u2 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u2$undecided)
-roc_xgb_u3 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u3$undecided)
-roc_xgb_u4 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u4$undecided)
-roc_xgb_u5 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u5$undecided)
-roc_xgb_u6 <- roc(response = X_back_track_test_u$undecided, predictor = p_xgb_u6$undecided)
+roc_xgb_u1 <- roc(response = X_back_track_test$undecided, predictor = p_xgb_u1$undecided)
+roc_xgb_u2 <- roc(response = X_back_track_test$undecided, predictor = p_xgb_u2$undecided)
+roc_xgb_u3 <- roc(response = X_back_track_test$undecided, predictor = p_xgb_u3$undecided)
+roc_xgb_u4 <- roc(response = X_back_track_test$undecided, predictor = p_xgb_u4$undecided)
+roc_xgb_u5 <- roc(response = X_back_track_test$undecided, predictor = p_xgb_u5$undecided)
+roc_xgb_u6 <- roc(response = X_back_track_test$undecided, predictor = p_xgb_u6$undecided)
 
 ggroc(list("Demo" = roc_xgb_u1, "Tracking" = roc_xgb_u5, "Demo+Tracking" = roc_xgb_u6)) +
   geom_abline(aes(intercept = 1, slope = 1)) +
   scale_colour_manual(name = "", values = c("#F8766D", "#00BA38", "#619CFF"),
-                      breaks = c("Demo", "Tracking", "Demo+Tracking"))
+                      breaks = c("Demo", "Tracking", "Demo+Tracking")) +
+  theme(text = element_text(size = 13))
 
 ggsave("p_roc_u.png", width = 7.5, height = 6)
+
+p_xgb_u1$obs <- X_back_track_test$undecided
+p_xgb_u1$pred <- predict(xgb_u1, newdata = X_back_track_test)
+p_xgb_u2$obs <- X_back_track_test$undecided
+p_xgb_u2$pred <- predict(xgb_u2, newdata = X_back_track_test)
+p_xgb_u3$obs <- X_back_track_test$undecided
+p_xgb_u3$pred <- predict(xgb_u3, newdata = X_back_track_test)
+p_xgb_u4$obs <- X_back_track_test$undecided
+p_xgb_u4$pred <- predict(xgb_u4, newdata = X_back_track_test)
+p_xgb_u5$obs <- X_back_track_test$undecided
+p_xgb_u5$pred <- predict(xgb_u5, newdata = X_back_track_test)
+p_xgb_u6$obs <- X_back_track_test$undecided
+p_xgb_u6$pred <- predict(xgb_u6, newdata = X_back_track_test)
+
+perf_u1 <- cbind(twoClassSummary(drop_na(p_xgb_u1), lev = levels(p_xgb_u1$obs))[[1]],
+                 mnLogLoss(p_xgb_u1, lev = levels(p_xgb_u1$obs))[[1]])
+perf_u2 <- cbind(twoClassSummary(drop_na(p_xgb_u2), lev = levels(p_xgb_u2$obs))[[1]],
+                 mnLogLoss(p_xgb_u2, lev = levels(p_xgb_u2$obs))[[1]])
+perf_u3 <- cbind(twoClassSummary(drop_na(p_xgb_u3), lev = levels(p_xgb_u3$obs))[[1]],
+                 mnLogLoss(p_xgb_u3, lev = levels(p_xgb_u3$obs))[[1]])
+perf_u4 <- cbind(twoClassSummary(drop_na(p_xgb_u4), lev = levels(p_xgb_u4$obs))[[1]],
+                 mnLogLoss(p_xgb_u4, lev = levels(p_xgb_u4$obs))[[1]])
+perf_u5 <- cbind(twoClassSummary(drop_na(p_xgb_u5), lev = levels(p_xgb_u5$obs))[[1]],
+                 mnLogLoss(p_xgb_u5, lev = levels(p_xgb_u5$obs))[[1]])
+perf_u6 <- cbind(twoClassSummary(drop_na(p_xgb_u6), lev = levels(p_xgb_u6$obs))[[1]],
+                 mnLogLoss(p_xgb_u6, lev = levels(p_xgb_u6$obs))[[1]])
+
+tab <- rbind(perf_u1, perf_u2, perf_u3, perf_u4, perf_u5, perf_u6)
+tab
+
+rtffile <- RTF("perf_u.doc")
+addTable(rtffile, round(tab, digits = 3))
+done(rtffile)
 
 # Performance at "optimal" threshold
 
@@ -514,12 +547,12 @@ c_xgb_u4 <- as.factor(ifelse(p_xgb_u4$undecided > roc_xgb_u4_t[1], "undecided", 
 c_xgb_u5 <- as.factor(ifelse(p_xgb_u5$undecided > roc_xgb_u5_t[1], "undecided", "decided"))
 c_xgb_u6 <- as.factor(ifelse(p_xgb_u6$undecided > roc_xgb_u6_t[1], "undecided", "decided"))
 
-cm1 <- confusionMatrix(c_xgb_u1, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
-cm2 <- confusionMatrix(c_xgb_u2, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
-cm3 <- confusionMatrix(c_xgb_u3, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
-cm4 <- confusionMatrix(c_xgb_u4, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
-cm5 <- confusionMatrix(c_xgb_u5, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
-cm6 <- confusionMatrix(c_xgb_u6, X_back_track_test_u$undecided, positive = "undecided", mode = "everything")
+cm1 <- confusionMatrix(c_xgb_u1, X_back_track_test$undecided, positive = "undecided", mode = "everything")
+cm2 <- confusionMatrix(c_xgb_u2, X_back_track_test$undecided, positive = "undecided", mode = "everything")
+cm3 <- confusionMatrix(c_xgb_u3, X_back_track_test$undecided, positive = "undecided", mode = "everything")
+cm4 <- confusionMatrix(c_xgb_u4, X_back_track_test$undecided, positive = "undecided", mode = "everything")
+cm5 <- confusionMatrix(c_xgb_u5, X_back_track_test$undecided, positive = "undecided", mode = "everything")
+cm6 <- confusionMatrix(c_xgb_u6, X_back_track_test$undecided, positive = "undecided", mode = "everything")
 
 Demo <- c(cm1$overall[1], cm1$byClass[c(1:2,5,7)], cm1$overall[2])
 Demo_Tracking_general <- c(cm2$overall[1], cm2$byClass[c(1:2,5,7)], cm2$overall[2])
@@ -534,4 +567,3 @@ tab
 rtffile <- RTF("t_perf_u.doc")
 addTable(rtffile, cbind(rownames(tab),round(tab, digits = 3)))
 done(rtffile)
-
