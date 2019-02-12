@@ -29,28 +29,61 @@ oeffrecht <- readRDS(file = "./data/oeffrecht_final.rds")
 
 # put datasets together
 
-X_back_track3 <- merge(back, fake, by = "panelist_id")
-X_back_track3 <- merge(X_back_track3, news_media, by = "panelist_id")
-X_back_track3 <- merge(X_back_track3, oeffrecht, by = "panelist_id")
-X_back_track3 <- merge(X_back_track3, tracking, by = "panelist_id")
-X_back_track3 <- merge(X_back_track3, tracking_small, by = "panelist_id")
+X_back_track <- merge(back, fake, by = "panelist_id")
+X_back_track <- merge(X_back_track, news_media, by = "panelist_id")
+X_back_track <- merge(X_back_track, oeffrecht, by = "panelist_id")
+X_back_track <- merge(X_back_track, tracking, by = "panelist_id")
+X_back_track <- merge(X_back_track, tracking_small, by = "panelist_id")
 
 # Attach Ys to X variables
-Y <- survey_w3 %>% 
+Y <- back %>% 
+  select(panelist_id, net_inc, age, gender, state, legal_status, num_children, emp_type)
+
+Y$D_lowinc <- as.factor(ifelse(Y$net_inc %in% c("[1] under 500 EUR", "[2] 500 to 1.000 EUR"), "low", "not_low"))
+Y$D_lowinc[Y$net_inc %in% c("[0] - please select -", "[98] No own income", "[99] No comment / answer")] <- NA
+Y$D_highinc <- as.factor(ifelse(Y$net_inc %in% c("[11] over 5.000 EUR", "[10] 4.500 to 5.000 EUR", "[9] 4.000 to 4.500 EUR", "[8] 3.500 to 4.000 EUR", "[7] 3.000 to 3.500 EUR"), "high", "not_high"))
+Y$D_highinc[Y$net_inc %in% c("[0] - please select -", "[98] No own income", "[99] No comment / answer")] <- NA
+Y$D_u25 <- as.factor(ifelse(Y$age <= 25, "u25", "o25"))
+Y$D_u25 <- relevel(Y$D_u25, ref = "u25")
+Y$D_o60 <- as.factor(ifelse(Y$age >= 60, "o60", "u60"))
+Y$D_male <- as.factor(ifelse(Y$gender == "[1] male", "male", "female"))
+Y$D_male <- relevel(Y$D_male, ref = "male")
+Y$D_east <- as.factor(ifelse(Y$state %in% c("[4] Brandenburg", "[8] Mecklenburg-Vorpommern", "[13] Sachsen", "[14] Sachsen-Anhalt", "[16] Thueringen"), "east", "west"))
+Y$D_east[Y$state == "[0] - bitte auswählen -"] <- NA
+Y$D_married <- as.factor(ifelse(Y$legal_status == "[1] Married", "married", "not_married"))
+Y$D_nopartner <- as.factor(ifelse(Y$legal_status %in% c("[4] Single, not living with partner", "[6] Divorced/widowed, not living with partner"), "no_partner", "partner"))
+Y$D_nochild <- as.factor(ifelse(Y$num_children == "[98] No children", "no_children", "children"))
+Y$D_nochild <- relevel(Y$D_nochild, ref = "no_children")
+Y$D_unemp <- as.factor(ifelse(Y$emp_type == "[7] Currently unemployed", "unemployed", "not_unemployed"))
+Y$D_unemp[Y$emptype == "[0] - please select -"] <- NA
+Y$D_unemp <- relevel(Y$D_unemp, ref = "unemployed")
+Y$D_fulltime <- as.factor(ifelse(Y$emp_type == "[1] Work full-time (30+ hours per week)", "fulltime", "not_fulltime"))
+Y$D_fulltime[Y$emptype == "[0] - please select -"] <- NA
+
+Y <- Y %>% 
+  select(panelist_id, D_lowinc, D_highinc, D_u25, D_o60, D_male, D_east, D_married, D_nopartner, D_nochild, D_unemp, D_fulltime)
+
+X_back_track <- merge(X_back_track, Y, by = "panelist_id")
+
+# Attach Ys to X variables
+Y2 <- survey_w3 %>% 
   select(c(voted, AFD, LEFT, party_affiliation, panelist_id))
 
-Y$voted <- as.factor(Y$voted)
-levels(Y$voted) <- c("not_voted", "voted")
-Y$AFD <- as.factor(Y$AFD)
-levels(Y$AFD) <- c("not_AFD", "AFD")
-Y$LEFT <- as.factor(Y$LEFT)
-levels(Y$LEFT) <- c("not_LEFT", "LEFT")
-Y$party_affiliation <- as.factor(Y$party_affiliation)
-levels(Y$party_affiliation) <- c("CDU","SPD","GREEN","FDP","LEFT","AFD","Other")
-levels(Y$party_affiliation) <- c(levels(Y$party_affiliation), "not voted")
-Y$party_affiliation[Y$voted == "not_voted"] <- "not voted"
+Y2$voted <- as.factor(Y2$voted)
+levels(Y2$voted) <- c("not_voted", "voted")
+Y2$voted <- relevel(Y2$voted, ref = "voted")
+Y2$AFD <- as.factor(Y2$AFD)
+levels(Y2$AFD) <- c("not_AFD", "AFD")
+Y2$AFD <- relevel(Y2$AFD, ref = "AFD")
+Y2$LEFT <- as.factor(Y2$LEFT)
+levels(Y2$LEFT) <- c("not_LEFT", "LEFT")
+Y2$LEFT <- relevel(Y2$LEFT, ref = "LEFT")
+Y2$party_affiliation <- as.factor(Y2$party_affiliation)
+levels(Y2$party_affiliation) <- c("CDU","SPD","GREEN","FDP","LEFT","AFD","Other")
+levels(Y2$party_affiliation) <- c(levels(Y2$party_affiliation), "not voted")
+Y2$party_affiliation[Y2$voted == "not_voted"] <- "not voted"
 
-X_back_track3 <- merge(X_back_track3, Y, by = "panelist_id")
+X_back_track2 <- merge(X_back_track, Y2, by = "panelist_id")
 
 # Wave 2
 
@@ -73,22 +106,23 @@ oeffrecht <- readRDS(file = "./data/oeffrecht_final.rds")
 
 # put datasets together
 
-X_back_track2 <- merge(back, fake, by = "panelist_id")
-X_back_track2 <- merge(X_back_track2, news_media, by = "panelist_id")
-X_back_track2 <- merge(X_back_track2, oeffrecht, by = "panelist_id")
-X_back_track2 <- merge(X_back_track2, tracking, by = "panelist_id")
-X_back_track2 <- merge(X_back_track2, tracking_small, by = "panelist_id")
+X_back_track3 <- merge(back, fake, by = "panelist_id")
+X_back_track3 <- merge(X_back_track3, news_media, by = "panelist_id")
+X_back_track3 <- merge(X_back_track3, oeffrecht, by = "panelist_id")
+X_back_track3 <- merge(X_back_track3, tracking, by = "panelist_id")
+X_back_track3 <- merge(X_back_track3, tracking_small, by = "panelist_id")
 
 # Attach Ys to X variables
 
-Y2 <- survey_w2 %>% 
+Y3 <- survey_w2 %>% 
   select(c(undecided, panelist_id))
 
-Y2$undecided <- as.factor(Y2$undecided)
-levels(Y2$undecided) <- c("decided", "undecided")
+Y3$undecided <- as.factor(Y3$undecided)
+levels(Y3$undecided) <- c("decided", "undecided")
+Y3$undecided <- relevel(Y3$undecided, ref = "undecided")
 
-X_back_track2 <- merge(X_back_track2, Y2, by = "panelist_id")
-X_back_track3 <- merge(X_back_track3, Y2, by = "panelist_id")
+X_back_track3 <- merge(X_back_track3, Y3, by = "panelist_id")
+X_back_track2 <- merge(X_back_track2, Y3, by = "panelist_id")
 
 ##################################################################################
 # Data exploration
@@ -96,19 +130,31 @@ X_back_track3 <- merge(X_back_track3, Y2, by = "panelist_id")
 
 # Descriptive stats (outcomes)
 
-tab1 <- c(table(X_back_track2$undecided), prop.table(table(X_back_track2$undecided)), sum(!is.na(X_back_track2$undecided)))
-tab2 <- c(table(X_back_track3$voted), prop.table(table(X_back_track3$voted)), sum(!is.na(X_back_track3$voted)))
-tab3 <- c(table(X_back_track3$AFD), prop.table(table(X_back_track3$AFD)), sum(!is.na(X_back_track3$AFD)))
-tab4 <- c(table(X_back_track3$LEFT), prop.table(table(X_back_track3$LEFT)), sum(!is.na(X_back_track3$LEFT)))
+tab_lowinc <- c(table(X_back_track$D_lowinc), prop.table(table(X_back_track$D_lowinc)), sum(!is.na(X_back_track$D_lowinc)))
+tab_highinc <- c(table(X_back_track$D_highinc), prop.table(table(X_back_track$D_highinc)), sum(!is.na(X_back_track$D_highinc)))
+tab_u25 <- c(table(X_back_track$D_u25), prop.table(table(X_back_track$D_u25)), sum(!is.na(X_back_track$D_u25)))
+tab_o60 <- c(table(X_back_track$D_o60), prop.table(table(X_back_track$D_o60)), sum(!is.na(X_back_track$D_o60)))
+tab_male <- c(table(X_back_track$D_male), prop.table(table(X_back_track$D_male)), sum(!is.na(X_back_track$D_male)))
+tab_east <- c(table(X_back_track$D_east), prop.table(table(X_back_track$D_east)), sum(!is.na(X_back_track$D_east)))
+tab_married <- c(table(X_back_track$D_married), prop.table(table(X_back_track$D_married)), sum(!is.na(X_back_track$D_married)))
+tab_nopartner <- c(table(X_back_track$D_nopartner), prop.table(table(X_back_track$D_nopartner)), sum(!is.na(X_back_track$D_nopartner)))
+tab_nochild <- c(table(X_back_track$D_nochild), prop.table(table(X_back_track$D_nochild)), sum(!is.na(X_back_track$D_nochild)))
+tab_unemp <- c(table(X_back_track$D_unemp), prop.table(table(X_back_track$D_unemp)), sum(!is.na(X_back_track$D_unemp)))
+tab_fulltime <- c(table(X_back_track$D_fulltime), prop.table(table(X_back_track$D_fulltime)), sum(!is.na(X_back_track$D_fulltime)))
 
-tab <- rbind(tab1, tab2, tab3, tab4)
+tab_undecided <- c(table(X_back_track3$undecided), prop.table(table(X_back_track3$undecided)), sum(!is.na(X_back_track3$undecided)))
+tab_voted <- c(table(X_back_track2$voted), prop.table(table(X_back_track2$voted)), sum(!is.na(X_back_track2$voted)))
+tab_AFD <- c(table(X_back_track2$AFD), prop.table(table(X_back_track2$AFD)), sum(!is.na(X_back_track2$AFD)))
+tab_LEFT <- c(table(X_back_track2$LEFT), prop.table(table(X_back_track2$LEFT)), sum(!is.na(X_back_track2$LEFT)))
+
+tab <- rbind(tab_lowinc, tab_highinc, tab_u25, tab_o60, tab_male, tab_east, tab_married, tab_nopartner, tab_nochild, tab_unemp, tab_fulltime, tab_undecided, tab_voted, tab_AFD, tab_LEFT)
 tab
 
 rtffile <- RTF("desc.doc")
 addTable(rtffile, cbind(rownames(tab),round(tab, digits = 3)))
 done(rtffile)
 
-p <- ggplot(X_back_track3) +
+p <- ggplot(X_back_track2) +
   geom_mosaic(aes(x = product(undecided, party_affiliation), fill = party_affiliation), na.rm = TRUE) +
   labs(y = "", x = "") +
   theme(legend.position = "none",

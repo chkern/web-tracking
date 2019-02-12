@@ -544,20 +544,31 @@ resamp <-
   resamp %>%
   mutate(model = factor(model)) %>%
   mutate(model = fct_recode(model,
-                            "D_lowinc" = "1",
-                            "D_highinc" = "2",
-                            "D_u25" = "3",
-                            "D_o60" = "4",
-                            "D_male" = "5",
-                            "D_east" = "6",
-                            "D_married" = "7",
-                            "D_nopartner" = "8",
-                            "D_nochild" = "9",
-                            "D_unemp" = "10",
-                            "D_fulltime" = "11"))
+                            "Low inc." = "1",
+                            "High inc." = "2",
+                            "Under 25" = "3",
+                            "Over 60" = "4",
+                            "Male" = "5",
+                            "East" = "6",
+                            "Married" = "7",
+                            "No partner" = "8",
+                            "No children" = "9",
+                            "Unemployed" = "10",
+                            "Full-time emp." = "11")) %>%
+  mutate(model = fct_relevel(model, "Low inc.",
+                             "High inc.",
+                             "Under 25",
+                             "Over 60",
+                             "Male",
+                             "East",
+                             "Married",
+                             "No partner",
+                             "No children",
+                             "Unemployed",
+                             "Full-time emp."))
 
 ggplot(resamp) +
-  geom_boxplot(aes(y = ROC, x = model, fill = model)) +
+  geom_boxplot(aes(y = ROC, x = fct_rev(model)), fill = "#619CFF") +
   ylim(0, 1) +
   labs(x = "") +
   labs(y = "ROC-AUC") +
@@ -567,7 +578,8 @@ ggplot(resamp) +
 ggsave("p_resamp_d1.png", width = 7.5, height = 7)
 
 ggplot(resamp) +
-  geom_boxplot(aes(y = logLoss, x = model, fill = model)) +
+  geom_boxplot(aes(y = logLoss, x = fct_rev(model)), fill = "#619CFF") +
+  ylim(0, 1) +
   labs(x = "") +
   labs(y = "logLoss") +
   coord_flip() + 
