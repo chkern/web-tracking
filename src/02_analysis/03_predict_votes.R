@@ -881,9 +881,9 @@ resamp1 <-
   mutate(model = factor(model)) %>%
   mutate(model = fct_recode(model,
                             "Demo" = "1",
-                            "Demo+Tracking_general" = "2",
-                            "Demo+Tracking_news" = "3",
-                            "Demo+Tracking_apps" = "4",
+                            "Demo+Track_general" = "2",
+                            "Demo+Track_news" = "3",
+                            "Demo+Track_domains_apps" = "4",
                             "Tracking" = "5",
                             "Demo+Tracking" = "6")) %>%
   mutate(model = fct_relevel(model, "Tracking", after = 1))
@@ -932,9 +932,9 @@ resamp2 <-
   mutate(model = factor(model)) %>%
   mutate(model = fct_recode(model,
                             "Demo" = "1",
-                            "Demo+Tracking_general" = "2",
-                            "Demo+Tracking_news" = "3",
-                            "Demo+Tracking_apps" = "4",
+                            "Demo+Track_general" = "2",
+                            "Demo+Track_news" = "3",
+                            "Demo+Track_domains_apps" = "4",
                             "Tracking" = "5",
                             "Demo+Tracking" = "6")) %>%
   mutate(model = fct_relevel(model, "Tracking", after = 1))
@@ -983,9 +983,9 @@ resamp3 <-
   mutate(model = factor(model)) %>%
   mutate(model = fct_recode(model,
                             "Demo" = "1",
-                            "Demo+Tracking_general" = "2",
-                            "Demo+Tracking_news" = "3",
-                            "Demo+Tracking_apps" = "4",
+                            "Demo+Track_general" = "2",
+                            "Demo+Track_news" = "3",
+                            "Demo+Track_domains_apps" = "4",
                             "Tracking" = "5",
                             "Demo+Tracking" = "6")) %>%
   mutate(model = fct_relevel(model, "Tracking", after = 1))
