@@ -245,9 +245,49 @@ model_v5 <- paste(model_v5, paste("+"), paste(track_news_media, collapse="+"))
 model_v5 <- paste(model_v5, paste("+"), paste(track_apps_domains, collapse="+"))
 model_v6 <- paste(model_v5, paste("+"), paste(survey_demo, collapse="+"))
 
+# RF Grid
+
 small <- ncol(model.matrix(eval(parse(text=model_v1)), X_back_track_train))
 med <- ncol(model.matrix(eval(parse(text=model_v2)), X_back_track_train))
 full <-  small + length(track_apps_domains)
+
+rf_grid <- expand.grid(mtry = c(round(sqrt(small)), round(log2(small)), round(sqrt(med)), round(log2(med)), round(sqrt(full)), round(log2(full))),
+                       splitrule = c("gini", "extratrees"),
+                       min.node.size = c(1, 5))
+
+# XGBoost Grid
+
+xgb_grid0 <- expand.grid(max_depth = c(1, 2, 3, 5, 7, 9),
+                         nrounds = 100,
+                         eta = 0.1,
+                         min_child_weight = 1:5,
+                         subsample = 0.7,
+                         gamma = c(0, 0.5),
+                         colsample_bytree = c(0.7, 1))
+
+set.seed(303493)
+eval(parse(text=paste("xgb_v0a <- train(",model_v1,",
+                      data = X_back_track_train,
+                      method = 'xgbTree',
+                      trControl = ctrl1,
+                      tuneGrid = xgb_grid0,
+                      metric = 'logLoss',
+                      na.action = na.omit)")))
+
+xgb_v0a
+plot(xgb_v0a)
+
+set.seed(303493)
+eval(parse(text=paste("xgb_v0b <- train(",model_v6,",
+                      data = X_back_track_train,
+                      method = 'xgbTree',
+                      trControl = ctrl1,
+                      tuneGrid = xgb_grid0,
+                      metric = 'logLoss',
+                      na.action = na.omit)")))
+
+xgb_v0b
+plot(xgb_v0b)
 
 xgb_grid <- expand.grid(max_depth = c(1, 2, 3, 5, 7, 9),
                         nrounds = c(500, 750, 1000, 1500, 2000),
@@ -256,10 +296,6 @@ xgb_grid <- expand.grid(max_depth = c(1, 2, 3, 5, 7, 9),
                         subsample = 0.7,
                         gamma = 0,
                         colsample_bytree = c(0.7, 1))
-
-rf_grid <- expand.grid(mtry = c(round(sqrt(small)), round(log2(small)), round(sqrt(med)), round(log2(med)), round(sqrt(full)), round(log2(full))),
-                       splitrule = c("gini", "extratrees"),
-                       min.node.size = c(1, 5))
 
 # Voted - survey_demo
 
@@ -451,6 +487,48 @@ model_a5 <- paste(model_a5, paste("+"), paste(track_news_media, collapse="+"))
 model_a5 <- paste(model_a5, paste("+"), paste(track_apps_domains, collapse="+"))
 model_a6 <- paste(model_a5, paste("+"), paste(survey_demo, collapse="+"))
 
+# XGBoost Grid
+
+xgb_grid0 <- expand.grid(max_depth = c(1, 2, 3, 5, 7, 9),
+                         nrounds = 100,
+                         eta = 0.1,
+                         min_child_weight = 1:5,
+                         subsample = 0.7,
+                         gamma = c(0, 0.5),
+                         colsample_bytree = c(0.7, 1))
+
+set.seed(303493)
+eval(parse(text=paste("xgb_a0a <- train(",model_a1,",
+                      data = X_back_track_train,
+                      method = 'xgbTree',
+                      trControl = ctrl1,
+                      tuneGrid = xgb_grid0,
+                      metric = 'logLoss',
+                      na.action = na.omit)")))
+
+xgb_a0a
+plot(xgb_a0a)
+
+set.seed(303493)
+eval(parse(text=paste("xgb_a0b <- train(",model_a6,",
+                      data = X_back_track_train,
+                      method = 'xgbTree',
+                      trControl = ctrl1,
+                      tuneGrid = xgb_grid0,
+                      metric = 'logLoss',
+                      na.action = na.omit)")))
+
+xgb_a0b
+plot(xgb_a0b)
+
+xgb_grid <- expand.grid(max_depth = c(1, 2, 3, 5, 7, 9),
+                        nrounds = c(500, 750, 1000, 1500, 2000),
+                        eta = c(0.005, 0.01, 0.025),
+                        min_child_weight = 5,
+                        subsample = 0.7,
+                        gamma = 0,
+                        colsample_bytree = c(0.7, 1))
+
 # AFD - survey_demo
 
 set.seed(303493)
@@ -623,6 +701,48 @@ model_l5 <- paste("LEFT ~", paste(track_general, collapse="+"))
 model_l5 <- paste(model_l5, paste("+"), paste(track_news_media, collapse="+"))
 model_l5 <- paste(model_l5, paste("+"), paste(track_apps_domains, collapse="+"))
 model_l6 <- paste(model_l5, paste("+"), paste(survey_demo, collapse="+"))
+
+# XGBoost Grid
+
+xgb_grid0 <- expand.grid(max_depth = c(1, 2, 3, 5, 7, 9),
+                         nrounds = 100,
+                         eta = 0.1,
+                         min_child_weight = 1:5,
+                         subsample = 0.7,
+                         gamma = c(0, 0.5),
+                         colsample_bytree = c(0.7, 1))
+
+set.seed(303493)
+eval(parse(text=paste("xgb_l0a <- train(",model_l1,",
+                      data = X_back_track_train,
+                      method = 'xgbTree',
+                      trControl = ctrl1,
+                      tuneGrid = xgb_grid0,
+                      metric = 'logLoss',
+                      na.action = na.omit)")))
+
+xgb_l0a
+plot(xgb_l0a)
+
+set.seed(303493)
+eval(parse(text=paste("xgb_l0b <- train(",model_l6,",
+                      data = X_back_track_train,
+                      method = 'xgbTree',
+                      trControl = ctrl1,
+                      tuneGrid = xgb_grid0,
+                      metric = 'logLoss',
+                      na.action = na.omit)")))
+
+xgb_l0b
+plot(xgb_l0b)
+
+xgb_grid <- expand.grid(max_depth = c(1, 2, 3, 5, 7, 9),
+                        nrounds = c(500, 750, 1000, 1500, 2000),
+                        eta = c(0.005, 0.01, 0.025),
+                        min_child_weight = 5,
+                        subsample = 0.7,
+                        gamma = 0,
+                        colsample_bytree = c(0.7, 1))
 
 # LEFT - survey_demo
 
