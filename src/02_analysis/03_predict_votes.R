@@ -141,15 +141,9 @@ evalStats <- function(...) c(twoClassSummary(...),
                              defaultSummary(...),
                              mnLogLoss(...))
 
-ctrl1  <- trainControl(method = "cv",
+ctrl  <- trainControl(method = "cv",
                        number = 10,
                        summaryFunction = evalStats,
-                       classProbs = TRUE,
-                       verboseIter = TRUE)
-
-ctrl2  <- trainControl(method = "cv",
-                       number = 10,
-                       summaryFunction = multiClassSummary,
                        classProbs = TRUE,
                        verboseIter = TRUE)
 
@@ -157,78 +151,6 @@ ctrl2  <- trainControl(method = "cv",
 #sbf_ctrl <- sbfControl(functions = caretSBF,
 #                       method = "cv",
 #                       number = 10)
-
-##################################################################################
-# Models - Trees
-##################################################################################
-
-# Voted - track_news_media
-
-X_back_track_train_c <- X_back_track_train[!is.na(X_back_track_train$voted),]
-
-model_v1 <- paste("voted ~",paste(track_news_media,collapse="+"))
-
-set.seed(543856)
-eval(parse(text=paste("tree_v1 <- rpart(",model_v1,",
-                      data = X_back_track_train_c,
-                      control = rpart.control(minsplit = 10,
-                      minbucket = 3,
-                      cp = 0.001,
-                      maxdepth = 4))")))
-
-printcp(tree_v1)
-party_tree_v1 <- as.party(tree_v1)
-plot(party_tree_v1, gp = gpar(fontsize = 8.5))
-
-# Voted - track_apps_domains
-
-model_v2 <- paste("voted ~",paste(track_apps_domains,collapse="+"))
-
-set.seed(543856)
-eval(parse(text=paste("tree_v2 <- rpart(",model_v2,",
-                      data = X_back_track_train_c,
-                      control = rpart.control(minsplit = 10,
-                      minbucket = 3,
-                      cp = 0.001,
-                      maxdepth = 4))")))
-
-printcp(tree_v2)
-party_tree_v2 <- as.party(tree_v2)
-plot(party_tree_v2, gp = gpar(fontsize = 8.5))
-
-# AFD - track_fake
-
-X_back_track_train_c <- X_back_track_train[!is.na(X_back_track_train$AFD),]
-
-model_a1 <- paste("AFD ~",paste(track_news_media,collapse="+"))
-
-set.seed(543856)
-eval(parse(text=paste("tree_a1 <- rpart(",model_a1,",
-                      data = X_back_track_train_c,
-                      control = rpart.control(minsplit = 10,
-                      minbucket = 3,
-                      cp = 0.001,
-                      maxdepth = 4))")))
-
-printcp(tree_a1)
-party_tree_a1 <- as.party(tree_a1)
-plot(party_tree_a1, gp = gpar(fontsize = 8.5))
-
-# AFD - track_apps_domains
-
-model_a2 <- paste("AFD ~",paste(track_apps_domains,collapse="+"))
-
-set.seed(543856)
-eval(parse(text=paste("tree_a2 <- rpart(",model_a2,",
-                      data = X_back_track_train_c,
-                      control = rpart.control(minsplit = 10,
-                      minbucket = 3,
-                      cp = 0.001,
-                      maxdepth = 4))")))
-
-printcp(tree_a2)
-party_tree_a2 <- as.party(tree_a2)
-plot(party_tree_a2, gp = gpar(fontsize = 8.5))
 
 ##################################################################################
 # Models - XGBoost & RF
@@ -255,56 +177,57 @@ rf_grid <- expand.grid(mtry = c(round(sqrt(small)), round(log2(small)), round(sq
                        splitrule = c("gini", "extratrees"),
                        min.node.size = c(1, 5))
 
-# XGBoost Grid
+# XGBoost Grid I
 
-xgb_grid0 <- expand.grid(max_depth = c(1, 2, 3, 5, 7, 9),
+xgb_grid0 <- expand.grid(max_depth = c(1, 3, 5, 7, 9, 11),
                          nrounds = 100,
-                         eta = 0.1,
-                         min_child_weight = 1:5,
-                         subsample = 0.7,
-                         gamma = c(0, 0.5),
-                         colsample_bytree = c(0.7, 1))
-
-set.seed(303493)
-eval(parse(text=paste("xgb_v0a <- train(",model_v1,",
-                      data = X_back_track_train,
-                      method = 'xgbTree',
-                      trControl = ctrl1,
-                      tuneGrid = xgb_grid0,
-                      metric = 'logLoss',
-                      na.action = na.omit)")))
-
-xgb_v0a
-plot(xgb_v0a)
-
-set.seed(303493)
-eval(parse(text=paste("xgb_v0b <- train(",model_v6,",
-                      data = X_back_track_train,
-                      method = 'xgbTree',
-                      trControl = ctrl1,
-                      tuneGrid = xgb_grid0,
-                      metric = 'logLoss',
-                      na.action = na.omit)")))
-
-xgb_v0b
-plot(xgb_v0b)
-
-xgb_grid <- expand.grid(max_depth = c(1, 2, 3, 5, 7, 9),
-                        nrounds = c(500, 750, 1000, 1500, 2000),
-                        eta = c(0.005, 0.01, 0.025),
-                        min_child_weight = 5,
-                        subsample = 0.7,
-                        gamma = 0,
-                        colsample_bytree = c(0.7, 1))
+                         eta = 0.05,
+                         min_child_weight = 0:5,
+                         subsample = 1,
+                         gamma = c(0, 0.5, 1),
+                         colsample_bytree = 1)
+tune_alpha <- c(0, 0.5)
 
 # Voted - survey_demo
+
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_v1a <- train(",model_v1,",
+                      data = X_back_track_train,
+                      method = 'xgbTree',
+                      trControl = ctrl,
+                      tuneGrid = xgb_grid0,
+                      alpha = alpha,
+                      metric = 'logLoss',
+                      na.action = na.omit)")))
+  part <- xgb_v1a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
 
 set.seed(303493)
 eval(parse(text=paste("xgb_v1 <- train(",model_v1,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -315,7 +238,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_v1 <- train(",model_v1,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -326,12 +249,44 @@ plot(rf_v1)
 
 # Voted - survey_demo + track_general
 
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_v2a <- train(",model_v2,",
+                      data = X_back_track_train,
+                      method = 'xgbTree',
+                      trControl = ctrl,
+                      tuneGrid = xgb_grid0,
+                      alpha = alpha,
+                      metric = 'logLoss',
+                      na.action = na.omit)")))
+  part <- xgb_v2a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
+
 set.seed(303493)
 eval(parse(text=paste("xgb_v2 <- train(",model_v2,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -342,7 +297,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_v2 <- train(",model_v2,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -353,12 +308,44 @@ plot(rf_v2)
 
 # Voted - survey_demo + track_news_media
 
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_v3a <- train(",model_v3,",
+                      data = X_back_track_train,
+                      method = 'xgbTree',
+                      trControl = ctrl,
+                      tuneGrid = xgb_grid0,
+                      alpha = alpha,
+                      metric = 'logLoss',
+                      na.action = na.omit)")))
+  part <- xgb_v3a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
+
 set.seed(303493)
 eval(parse(text=paste("xgb_v3 <- train(",model_v3,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -369,7 +356,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_v3 <- train(",model_v3,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -380,12 +367,44 @@ plot(rf_v3)
 
 # Voted - survey_demo + track_apps_domains
 
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_v4a <- train(",model_v4,",
+                        data = X_back_track_train,
+                        method = 'xgbTree',
+                        trControl = ctrl,
+                        tuneGrid = xgb_grid0,
+                        alpha = alpha,
+                        metric = 'logLoss',
+                        na.action = na.omit)")))
+  part <- xgb_v4a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
+
 set.seed(303493)
 eval(parse(text=paste("xgb_v4 <- train(",model_v4,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -396,7 +415,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_v4 <- train(",model_v4,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -407,12 +426,44 @@ plot(rf_v4)
 
 # Voted - only tracking data
 
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_v5a <- train(",model_v5,",
+                        data = X_back_track_train,
+                        method = 'xgbTree',
+                        trControl = ctrl,
+                        tuneGrid = xgb_grid0,
+                        alpha = alpha,
+                        metric = 'logLoss',
+                        na.action = na.omit)")))
+  part <- xgb_v5a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
+
 set.seed(303493)
 eval(parse(text=paste("xgb_v5 <- train(",model_v5,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -423,7 +474,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_v5 <- train(",model_v5,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -434,12 +485,44 @@ plot(rf_v5)
 
 # Voted - tracking data + survey_demo
 
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_v6a <- train(",model_v6,",
+                        data = X_back_track_train,
+                        method = 'xgbTree',
+                        trControl = ctrl,
+                        tuneGrid = xgb_grid0,
+                        alpha = alpha,
+                        metric = 'logLoss',
+                        na.action = na.omit)")))
+  part <- xgb_v6a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
+
 set.seed(303493)
 eval(parse(text=paste("xgb_v6 <- train(",model_v6,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -450,7 +533,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_v6 <- train(",model_v6,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -465,7 +548,7 @@ plot(rf_v6)
 #eval(parse(text=paste("xgb_v8 <- sbf(",model_v7,",
 #            data = X_back_track_train,
 #            method = 'xgbTree',
-#            trControl = ctrl1,
+#            trControl = ctrl,
 #            sbfControl = sbf_ctrl,
 #            tuneGrid = xgb_grid,
 #            metric = 'logLoss',
@@ -487,56 +570,46 @@ model_a5 <- paste(model_a5, paste("+"), paste(track_news_media, collapse="+"))
 model_a5 <- paste(model_a5, paste("+"), paste(track_apps_domains, collapse="+"))
 model_a6 <- paste(model_a5, paste("+"), paste(survey_demo, collapse="+"))
 
-# XGBoost Grid
-
-xgb_grid0 <- expand.grid(max_depth = c(1, 2, 3, 5, 7, 9),
-                         nrounds = 100,
-                         eta = 0.1,
-                         min_child_weight = 1:5,
-                         subsample = 0.7,
-                         gamma = c(0, 0.5),
-                         colsample_bytree = c(0.7, 1))
-
-set.seed(303493)
-eval(parse(text=paste("xgb_a0a <- train(",model_a1,",
-                      data = X_back_track_train,
-                      method = 'xgbTree',
-                      trControl = ctrl1,
-                      tuneGrid = xgb_grid0,
-                      metric = 'logLoss',
-                      na.action = na.omit)")))
-
-xgb_a0a
-plot(xgb_a0a)
-
-set.seed(303493)
-eval(parse(text=paste("xgb_a0b <- train(",model_a6,",
-                      data = X_back_track_train,
-                      method = 'xgbTree',
-                      trControl = ctrl1,
-                      tuneGrid = xgb_grid0,
-                      metric = 'logLoss',
-                      na.action = na.omit)")))
-
-xgb_a0b
-plot(xgb_a0b)
-
-xgb_grid <- expand.grid(max_depth = c(1, 2, 3, 5, 7, 9),
-                        nrounds = c(500, 750, 1000, 1500, 2000),
-                        eta = c(0.005, 0.01, 0.025),
-                        min_child_weight = 5,
-                        subsample = 0.7,
-                        gamma = 0,
-                        colsample_bytree = c(0.7, 1))
-
 # AFD - survey_demo
+
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_a1a <- train(",model_a1,",
+                        data = X_back_track_train,
+                        method = 'xgbTree',
+                        trControl = ctrl,
+                        tuneGrid = xgb_grid0,
+                        alpha = alpha,
+                        metric = 'logLoss',
+                        na.action = na.omit)")))
+  part <- xgb_a1a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
 
 set.seed(303493)
 eval(parse(text=paste("xgb_a1 <- train(",model_a1,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -547,7 +620,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_a1 <- train(",model_a1,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -558,12 +631,44 @@ plot(rf_a1)
 
 # AFD - survey_demo + track_general
 
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_a2a <- train(",model_a2,",
+                        data = X_back_track_train,
+                        method = 'xgbTree',
+                        trControl = ctrl,
+                        tuneGrid = xgb_grid0,
+                        alpha = alpha,
+                        metric = 'logLoss',
+                        na.action = na.omit)")))
+  part <- xgb_a2a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
+
 set.seed(303493)
 eval(parse(text=paste("xgb_a2 <- train(",model_a2,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -574,7 +679,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_a2 <- train(",model_a2,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -585,12 +690,44 @@ plot(rf_a2)
 
 # AFD - survey_demo + track_news_media
 
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_a3a <- train(",model_a3,",
+                        data = X_back_track_train,
+                        method = 'xgbTree',
+                        trControl = ctrl,
+                        tuneGrid = xgb_grid0,
+                        alpha = alpha,
+                        metric = 'logLoss',
+                        na.action = na.omit)")))
+  part <- xgb_a3a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
+
 set.seed(303493)
 eval(parse(text=paste("xgb_a3 <- train(",model_a3,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -601,7 +738,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_a3 <- train(",model_a3,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -612,12 +749,44 @@ plot(rf_a3)
 
 # AFD - survey_demo + track_apps_domains
 
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_a4a <- train(",model_a4,",
+                        data = X_back_track_train,
+                        method = 'xgbTree',
+                        trControl = ctrl,
+                        tuneGrid = xgb_grid0,
+                        alpha = alpha,
+                        metric = 'logLoss',
+                        na.action = na.omit)")))
+  part <- xgb_a4a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
+
 set.seed(303493)
 eval(parse(text=paste("xgb_a4 <- train(",model_a4,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -628,7 +797,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_a4 <- train(",model_a4,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -639,12 +808,44 @@ plot(rf_a4)
 
 # AFD - only tracking data
 
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_a5a <- train(",model_a5,",
+                        data = X_back_track_train,
+                        method = 'xgbTree',
+                        trControl = ctrl,
+                        tuneGrid = xgb_grid0,
+                        alpha = alpha,
+                        metric = 'logLoss',
+                        na.action = na.omit)")))
+  part <- xgb_a5a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
+
 set.seed(303493)
 eval(parse(text=paste("xgb_a5 <- train(",model_a5,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -655,7 +856,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_a5 <- train(",model_a5,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -666,12 +867,44 @@ plot(rf_a5)
 
 # AFD - tracking data + survey_demo
 
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_a6a <- train(",model_a6,",
+                        data = X_back_track_train,
+                        method = 'xgbTree',
+                        trControl = ctrl,
+                        tuneGrid = xgb_grid0,
+                        alpha = alpha,
+                        metric = 'logLoss',
+                        na.action = na.omit)")))
+  part <- xgb_a6a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
+
 set.seed(303493)
 eval(parse(text=paste("xgb_a6 <- train(",model_a6,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -682,7 +915,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_a6 <- train(",model_a6,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -702,56 +935,46 @@ model_l5 <- paste(model_l5, paste("+"), paste(track_news_media, collapse="+"))
 model_l5 <- paste(model_l5, paste("+"), paste(track_apps_domains, collapse="+"))
 model_l6 <- paste(model_l5, paste("+"), paste(survey_demo, collapse="+"))
 
-# XGBoost Grid
-
-xgb_grid0 <- expand.grid(max_depth = c(1, 2, 3, 5, 7, 9),
-                         nrounds = 100,
-                         eta = 0.1,
-                         min_child_weight = 1:5,
-                         subsample = 0.7,
-                         gamma = c(0, 0.5),
-                         colsample_bytree = c(0.7, 1))
-
-set.seed(303493)
-eval(parse(text=paste("xgb_l0a <- train(",model_l1,",
-                      data = X_back_track_train,
-                      method = 'xgbTree',
-                      trControl = ctrl1,
-                      tuneGrid = xgb_grid0,
-                      metric = 'logLoss',
-                      na.action = na.omit)")))
-
-xgb_l0a
-plot(xgb_l0a)
-
-set.seed(303493)
-eval(parse(text=paste("xgb_l0b <- train(",model_l6,",
-                      data = X_back_track_train,
-                      method = 'xgbTree',
-                      trControl = ctrl1,
-                      tuneGrid = xgb_grid0,
-                      metric = 'logLoss',
-                      na.action = na.omit)")))
-
-xgb_l0b
-plot(xgb_l0b)
-
-xgb_grid <- expand.grid(max_depth = c(1, 2, 3, 5, 7, 9),
-                        nrounds = c(500, 750, 1000, 1500, 2000),
-                        eta = c(0.005, 0.01, 0.025),
-                        min_child_weight = 5,
-                        subsample = 0.7,
-                        gamma = 0,
-                        colsample_bytree = c(0.7, 1))
-
 # LEFT - survey_demo
+
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_l1a <- train(",model_l1,",
+                        data = X_back_track_train,
+                        method = 'xgbTree',
+                        trControl = ctrl,
+                        tuneGrid = xgb_grid0,
+                        alpha = alpha,
+                        metric = 'logLoss',
+                        na.action = na.omit)")))
+  part <- xgb_l1a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
 
 set.seed(303493)
 eval(parse(text=paste("xgb_l1 <- train(",model_l1,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -762,7 +985,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_l1 <- train(",model_l1,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -773,12 +996,44 @@ plot(rf_l1)
 
 # LEFT - survey_demo + track_general
 
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_l2a <- train(",model_l2,",
+                        data = X_back_track_train,
+                        method = 'xgbTree',
+                        trControl = ctrl,
+                        tuneGrid = xgb_grid0,
+                        alpha = alpha,
+                        metric = 'logLoss',
+                        na.action = na.omit)")))
+  part <- xgb_l2a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
+
 set.seed(303493)
 eval(parse(text=paste("xgb_l2 <- train(",model_l2,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -789,7 +1044,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_l2 <- train(",model_l2,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -800,12 +1055,44 @@ plot(rf_l2)
 
 # LEFT - survey_demo + track_news_media
 
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_l3a <- train(",model_l3,",
+                        data = X_back_track_train,
+                        method = 'xgbTree',
+                        trControl = ctrl,
+                        tuneGrid = xgb_grid0,
+                        alpha = alpha,
+                        metric = 'logLoss',
+                        na.action = na.omit)")))
+  part <- xgb_l3a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
+
 set.seed(303493)
 eval(parse(text=paste("xgb_l3 <- train(",model_l3,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -816,7 +1103,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_l3 <- train(",model_l3,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -827,12 +1114,44 @@ plot(rf_l3)
 
 # LEFT - survey_demo + track_apps_domains
 
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_l4a <- train(",model_l4,",
+                        data = X_back_track_train,
+                        method = 'xgbTree',
+                        trControl = ctrl,
+                        tuneGrid = xgb_grid0,
+                        alpha = alpha,
+                        metric = 'logLoss',
+                        na.action = na.omit)")))
+  part <- xgb_l4a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
+
 set.seed(303493)
 eval(parse(text=paste("xgb_l4 <- train(",model_l4,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -843,7 +1162,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_l4 <- train(",model_l4,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -854,12 +1173,44 @@ plot(rf_l4)
 
 # LEFT - only tracking data
 
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_l5a <- train(",model_l5,",
+                        data = X_back_track_train,
+                        method = 'xgbTree',
+                        trControl = ctrl,
+                        tuneGrid = xgb_grid0,
+                        alpha = alpha,
+                        metric = 'logLoss',
+                        na.action = na.omit)")))
+  part <- xgb_l5a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
+
 set.seed(303493)
 eval(parse(text=paste("xgb_l5 <- train(",model_l5,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -870,7 +1221,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_l5 <- train(",model_l5,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
@@ -881,12 +1232,44 @@ plot(rf_l5)
 
 # LEFT - tracking data + survey_demo
 
+results <- data.frame()
+for (i in seq_along(tune_alpha)) {
+  alpha <- tune_alpha[i]
+  set.seed(303493)
+  eval(parse(text=paste("xgb_l6a <- train(",model_l6,",
+                        data = X_back_track_train,
+                        method = 'xgbTree',
+                        trControl = ctrl,
+                        tuneGrid = xgb_grid0,
+                        alpha = alpha,
+                        metric = 'logLoss',
+                        na.action = na.omit)")))
+  part <- xgb_l6a$results
+  part$alpha <- alpha
+  results <- rbind(results, part)
+}
+
+best_depth <- results$max_depth[which.min(results[,"logLoss"])]
+best_child <- results$min_child_weight[which.min(results[,"logLoss"])]
+best_gamma <- results$gamma[which.min(results[,"logLoss"])]
+best_alpha <- results$alpha[which.min(results[,"logLoss"])]
+
+xgb_grid <- expand.grid(max_depth = c(best_depth-1, best_depth, best_depth+1),
+                        nrounds = c(250, 500, 750, 1000),
+                        eta = c(0.025, 0.01),
+                        min_child_weight = best_child,
+                        subsample = c(0.7, 1),
+                        gamma = best_gamma,
+                        colsample_bytree = c(0.7, 1))
+xgb_grid <- filter(xgb_grid, max_depth >= 1)
+
 set.seed(303493)
 eval(parse(text=paste("xgb_l6 <- train(",model_l6,",
                       data = X_back_track_train,
                       method = 'xgbTree',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = xgb_grid,
+                      alpha = best_alpha,
                       metric = 'logLoss',
                       na.action = na.omit)")))
 
@@ -897,7 +1280,7 @@ set.seed(303493)
 eval(parse(text=paste("rf_l6 <- train(",model_l6,",
                       data = X_back_track_train,
                       method = 'ranger',
-                      trControl = ctrl1,
+                      trControl = ctrl,
                       tuneGrid = rf_grid,
                       metric = 'logLoss',
                       importance = 'impurity',
