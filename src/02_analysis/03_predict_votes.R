@@ -1397,7 +1397,8 @@ ggplot(resamp1) +
   labs(x = "") +
   labs(y = "ROC-AUC") +
   coord_flip() + 
-  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
+  scale_fill_manual(values = c("#E6E6E6", "#AEAEAE", "#4D4D4D", "#4D4D4D", "#4D4D4D", "#4D4D4D")) +
+  theme_bw() +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 ggsave("p_resamp_v1.png", width = 7.5, height = 7)
@@ -1408,7 +1409,8 @@ ggplot(resamp1) +
   labs(x = "") +
   labs(y = "logLoss") +
   coord_flip() + 
-  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
+  scale_fill_manual(values = c("#E6E6E6", "#AEAEAE", "#4D4D4D", "#4D4D4D", "#4D4D4D", "#4D4D4D")) +
+  theme_bw() +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 ggsave("p_resamp_v2.png", width = 7.5, height = 7)
@@ -1448,7 +1450,8 @@ ggplot(resamp2) +
   labs(x = "") +
   labs(y = "ROC-AUC") +
   coord_flip() + 
-  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
+  scale_fill_manual(values = c("#E6E6E6", "#AEAEAE", "#4D4D4D", "#4D4D4D", "#4D4D4D", "#4D4D4D")) +
+  theme_bw() +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 ggsave("p_resamp_a1.png", width = 7.5, height = 7)
@@ -1459,7 +1462,8 @@ ggplot(resamp2) +
   labs(x = "") +
   labs(y = "logLoss") +
   coord_flip() + 
-  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
+  scale_fill_manual(values = c("#E6E6E6", "#AEAEAE", "#4D4D4D", "#4D4D4D", "#4D4D4D", "#4D4D4D")) +
+  theme_bw() +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 ggsave("p_resamp_a2.png", width = 7.5, height = 7)
@@ -1499,7 +1503,8 @@ ggplot(resamp3) +
   labs(x = "") +
   labs(y = "ROC-AUC") +
   coord_flip() + 
-  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
+  scale_fill_manual(values = c("#E6E6E6", "#AEAEAE", "#4D4D4D", "#4D4D4D", "#4D4D4D", "#4D4D4D")) +
+  theme_bw() +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 ggsave("p_resamp_l1.png", width = 7.5, height = 7)
@@ -1510,7 +1515,8 @@ ggplot(resamp3) +
   labs(x = "") +
   labs(y = "logLoss") +
   coord_flip() + 
-  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
+  scale_fill_manual(values = c("#E6E6E6", "#AEAEAE", "#4D4D4D", "#4D4D4D", "#4D4D4D", "#4D4D4D")) +
+  theme_bw() +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 ggsave("p_resamp_l2.png", width = 7.5, height = 7)

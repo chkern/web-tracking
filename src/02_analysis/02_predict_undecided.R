@@ -596,13 +596,16 @@ resamp1 <-
                             "Demo+Tracking" = "6")) %>%
   mutate(model = fct_relevel(model, "Tracking", after = 1))
 
+#grey.colors(3)
+
 ggplot(resamp1) +
   geom_boxplot(aes(y = ROC, x = fct_rev(model), fill = model)) +
   ylim(0, 1) +
   labs(x = "") +
   labs(y = "ROC-AUC") +
   coord_flip() + 
-  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
+  scale_fill_manual(values = c("#E6E6E6", "#AEAEAE", "#4D4D4D", "#4D4D4D", "#4D4D4D", "#4D4D4D")) +
+  theme_bw() +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 ggsave("p_resamp_u1.png", width = 7.5, height = 7)
@@ -613,7 +616,8 @@ ggplot(resamp1) +
   labs(x = "") +
   labs(y = "logLoss") +
   coord_flip() + 
-  scale_fill_manual(values = c("#F8766D", "#619CFF", "#00BA38", "#00BA38", "#00BA38", "#00BA38")) +
+  scale_fill_manual(values = c("#E6E6E6", "#AEAEAE", "#4D4D4D", "#4D4D4D", "#4D4D4D", "#4D4D4D")) +
+  theme_bw() +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 ggsave("p_resamp_u2.png", width = 7.5, height = 7)

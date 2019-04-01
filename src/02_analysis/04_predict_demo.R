@@ -923,22 +923,26 @@ resamp <-
                              "Unemployed",
                              "Full-time emp."))
 
+#grey.colors(3)
+
 ggplot(resamp) +
-  geom_boxplot(aes(y = ROC, x = fct_rev(model)), fill = "#619CFF") +
+  geom_boxplot(aes(y = ROC, x = fct_rev(model)), fill = "#AEAEAE") +
   ylim(0, 1) +
   labs(x = "") +
   labs(y = "ROC-AUC") +
   coord_flip() + 
+  theme_bw() +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 ggsave("p_resamp_d1.png", width = 7.5, height = 7)
 
 ggplot(resamp) +
-  geom_boxplot(aes(y = logLoss, x = fct_rev(model)), fill = "#619CFF") +
+  geom_boxplot(aes(y = logLoss, x = fct_rev(model)), fill = "#AEAEAE") +
   ylim(0, 1) +
   labs(x = "") +
   labs(y = "logLoss") +
   coord_flip() + 
+  theme_bw() +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))
 ggsave("p_resamp_d2.png", width = 7.5, height = 7)
