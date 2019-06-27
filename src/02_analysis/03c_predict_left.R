@@ -10,6 +10,7 @@ library(xgboost)
 library(ranger)
 library(pROC)
 library(rtf)
+library(pdp)
 
 # Set path
 setwd("Y:\\Respondi\\RESPONDI_w3\\")
@@ -445,6 +446,70 @@ ggplot(imp_xgb_l6) +
     breaks = imp_xgb_l6$order,
     labels = imp_xgb_l6$varname)
 ggsave("p_imp_l.png", width = 6, height = 6)
+
+##################################################################################
+# PDPs
+##################################################################################
+
+pdp1 <- partial(xgb_l6, pred.var = "wpvicecom", type = "classification", which.class = 2, prob = T, rug = T,
+                plot = T, plot.engine = "ggplot2", progress = "text")
+
+pdp1
+ggsave("p_pdp1_l.png", width = 9, height = 9)
+
+pdp2 <- partial(xgb_l6, pred.var = "mvDBNavigator", type = "classification", which.class = 2, prob = T, rug = T,
+                plot = T, plot.engine = "ggplot2", progress = "text")
+
+pdp2
+ggsave("p_pdp2_l.png", width = 9, height = 9)
+
+pdp3 <- partial(xgb_l6, pred.var = "wptwittercom", type = "classification", which.class = 2, prob = T, rug = T,
+                plot = T, plot.engine = "ggplot2", progress = "text")
+
+pdp3
+ggsave("p_pdp3_l.png", width = 9, height = 9)
+
+pdp4 <- partial(xgb_l6, pred.var = "wpdictcc", type = "classification", which.class = 2, prob = T, rug = T, 
+                plot = T, plot.engine = "ggplot2", progress = "text")
+
+pdp4
+ggsave("p_pdp4_l.png", width = 9, height = 9)
+
+pdp5 <- partial(xgb_l6, pred.var = "wpzeitde", type = "classification", which.class = 2, prob = T, rug = T, 
+                plot = T, plot.engine = "ggplot2", progress = "text")
+
+pdp5
+ggsave("p_pdp5_l.png", width = 9, height = 9)
+
+pdp6 <- partial(xgb_l6, pred.var = "wpkinoxto", type = "classification", which.class = 2, prob = T, rug = T, 
+                plot = T, plot.engine = "ggplot2", progress = "text")
+
+pdp6
+ggsave("p_pdp6_l.png", width = 9, height = 9)
+
+pdp7 <- partial(xgb_l6, pred.var = "wpdomfbreln", type = "classification", which.class = 2, prob = T, rug = T, 
+                plot = T, plot.engine = "ggplot2", progress = "text")
+
+pdp7
+ggsave("p_pdp7_l.png", width = 9, height = 9)
+
+pdp8 <- partial(xgb_l6, pred.var = "mvVideo", type = "classification", which.class = 2, prob = T, rug = T, 
+                plot = T, plot.engine = "ggplot2", progress = "text")
+
+pdp8
+ggsave("p_pdp8_l.png", width = 9, height = 9)
+
+pdp9 <- partial(xgb_l6, pred.var = "wptvmoviede", type = "classification", which.class = 2, prob = T, rug = T, 
+                plot = T, plot.engine = "ggplot2", progress = "text")
+
+pdp9
+ggsave("p_pdp9_l.png", width = 9, height = 9)
+
+pdp10 <- partial(xgb_l6, pred.var = "wpwikimediaorg", type = "classification", which.class = 2, prob = T, rug = T, 
+                 plot = T, plot.engine = "ggplot2", progress = "text")
+
+pdp10
+ggsave("p_pdp10_l.png", width = 9, height = 9)
 
 ##################################################################################
 # Compare CV performance
