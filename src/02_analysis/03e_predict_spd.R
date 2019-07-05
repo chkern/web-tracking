@@ -491,7 +491,7 @@ ggsave("p_resamp_s1.png", width = 7.5, height = 7)
 
 ggplot(resamp) +
   geom_boxplot(aes(y = logLoss, x = fct_rev(model), fill = model)) +
-  ylim(0.2, 0.5) +
+  ylim(0.3, 0.6) +
   labs(x = "") +
   labs(y = "logLoss") +
   coord_flip() + 
@@ -570,7 +570,7 @@ done(rtffile)
 # Performance at "optimal" threshold - SPD
 
 prop.table(table(X_back_track_train$SPD))
-# roc_xgb_s1_t <- coords(roc_xgb_s1, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.9))
+roc_xgb_s1_t <- coords(roc_xgb_s1, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.25))
 
 c_xgb_s1 <- as.factor(ifelse(p_xgb_s1$SPD > roc_xgb_s1_t[[1]], "SPD", "not_SPD"))
 c_xgb_s2 <- as.factor(ifelse(p_xgb_s2$SPD > roc_xgb_s1_t[[1]], "SPD", "not_SPD"))

@@ -570,7 +570,7 @@ done(rtffile)
 # Performance at "optimal" threshold - GREEN
 
 prop.table(table(X_back_track_train$GREEN))
-# roc_xgb_g1_t <- coords(roc_xgb_g1, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.9))
+roc_xgb_g1_t <- coords(roc_xgb_g1, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.1))
 
 c_xgb_g1 <- as.factor(ifelse(p_xgb_g1$GREEN > roc_xgb_g1_t[[1]], "GREEN", "not_GREEN"))
 c_xgb_g2 <- as.factor(ifelse(p_xgb_g2$GREEN > roc_xgb_g1_t[[1]], "GREEN", "not_GREEN"))

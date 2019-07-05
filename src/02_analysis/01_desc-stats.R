@@ -67,7 +67,7 @@ X_back_track <- merge(X_back_track, Y, by = "panelist_id")
 
 # Attach Ys to X variables
 Y2 <- survey_w3 %>% 
-  select(c(voted, AFD, LEFT, party_affiliation, panelist_id))
+  select(c(voted, AFD, LEFT, CDU, SPD, GREEN, FDP, panelist_id))
 
 Y2$voted <- as.factor(Y2$voted)
 levels(Y2$voted) <- c("not_voted", "voted")
@@ -78,10 +78,18 @@ Y2$AFD <- relevel(Y2$AFD, ref = "AFD")
 Y2$LEFT <- as.factor(Y2$LEFT)
 levels(Y2$LEFT) <- c("not_LEFT", "LEFT")
 Y2$LEFT <- relevel(Y2$LEFT, ref = "LEFT")
-Y2$party_affiliation <- as.factor(Y2$party_affiliation)
-levels(Y2$party_affiliation) <- c("CDU","SPD","GREEN","FDP","LEFT","AFD","Other")
-levels(Y2$party_affiliation) <- c(levels(Y2$party_affiliation), "not voted")
-Y2$party_affiliation[Y2$voted == "not_voted"] <- "not voted"
+Y2$CDU <- as.factor(Y2$CDU)
+levels(Y2$CDU) <- c("not_CDU", "CDU")
+Y2$CDU <- relevel(Y2$CDU, ref = "CDU")
+Y2$SPD <- as.factor(Y2$SPD)
+levels(Y2$SPD) <- c("not_SPD", "SPD")
+Y2$SPD <- relevel(Y2$SPD, ref = "SPD")
+Y2$GREEN <- as.factor(Y2$GREEN)
+levels(Y2$GREEN) <- c("not_GREEN", "GREEN")
+Y2$GREEN <- relevel(Y2$GREEN, ref = "GREEN")
+Y2$FDP <- as.factor(Y2$FDP)
+levels(Y2$FDP) <- c("not_FDP", "FDP")
+Y2$FDP <- relevel(Y2$FDP, ref = "FDP")
 
 X_back_track2 <- merge(X_back_track, Y2, by = "panelist_id")
 
@@ -146,8 +154,13 @@ tab_undecided <- c(table(X_back_track3$undecided), prop.table(table(X_back_track
 tab_voted <- c(table(X_back_track2$voted), prop.table(table(X_back_track2$voted)), sum(!is.na(X_back_track2$voted)))
 tab_AFD <- c(table(X_back_track2$AFD), prop.table(table(X_back_track2$AFD)), sum(!is.na(X_back_track2$AFD)))
 tab_LEFT <- c(table(X_back_track2$LEFT), prop.table(table(X_back_track2$LEFT)), sum(!is.na(X_back_track2$LEFT)))
+tab_CDU <- c(table(X_back_track2$CDU), prop.table(table(X_back_track2$CDU)), sum(!is.na(X_back_track2$CDU)))
+tab_SPD <- c(table(X_back_track2$SPD), prop.table(table(X_back_track2$SPD)), sum(!is.na(X_back_track2$SPD)))
+tab_GREEN <- c(table(X_back_track2$GREEN), prop.table(table(X_back_track2$GREEN)), sum(!is.na(X_back_track2$GREEN)))
+tab_FDP <- c(table(X_back_track2$FDP), prop.table(table(X_back_track2$FDP)), sum(!is.na(X_back_track2$FDP)))
 
-tab <- rbind(tab_lowinc, tab_highinc, tab_u25, tab_o60, tab_male, tab_east, tab_married, tab_nopartner, tab_nochild, tab_unemp, tab_fulltime, tab_undecided, tab_voted, tab_AFD, tab_LEFT)
+tab <- rbind(tab_lowinc, tab_highinc, tab_u25, tab_o60, tab_male, tab_east, tab_married, tab_nopartner, tab_nochild, tab_unemp, tab_fulltime, 
+             tab_undecided, tab_voted, tab_AFD, tab_LEFT, tab_CDU, tab_SPD, tab_GREEN, tab_FDP)
 tab
 
 rtffile <- RTF("desc.doc")

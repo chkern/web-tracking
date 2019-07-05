@@ -570,7 +570,7 @@ done(rtffile)
 # Performance at "optimal" threshold - FDP
 
 prop.table(table(X_back_track_train$FDP))
-# roc_xgb_f1_t <- coords(roc_xgb_f1, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.9))
+roc_xgb_f1_t <- coords(roc_xgb_f1, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.9))
 
 c_xgb_f1 <- as.factor(ifelse(p_xgb_f1$FDP > roc_xgb_f1_t[[1]], "FDP", "not_FDP"))
 c_xgb_f2 <- as.factor(ifelse(p_xgb_f2$FDP > roc_xgb_f1_t[[1]], "FDP", "not_FDP"))

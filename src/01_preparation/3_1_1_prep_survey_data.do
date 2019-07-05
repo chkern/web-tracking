@@ -1,6 +1,6 @@
 *Preparation of survey data
 clear all
-usespss "U:\respondi sinus daten\survey_daten\6423_BTW_Sinus_final_W1+W2+W3_2017_10_06.sav"
+usespss "Y:\\Respondi\\RESPONDI_w3\\survey_daten\\6423_BTW_Sinus_final_W1+W2+W3_2017_10_06.sav"
 
 *There seems to be some importing issue from SPSS file to Stata file
 foreach v of varlist * {
@@ -37,6 +37,10 @@ drop v_407
 
 rename v_408 occ_pos
 rename v_409 why_unemp
+
+replace why_unemp = -77 if occ_pos>0 & occ_pos!=.
+replace occ_pos = -78 if occ_pos==.
+
 
 //income
 rename v_410 inc_cat
@@ -489,23 +493,103 @@ rename v_490_w3 q34_15_w3
 rename v_491_w3 q34_16_w3
 rename v_492_w3 q34_17_w3
 
-saveold "U:\respondi sinus daten\survey_daten\survey_data_all_waves.dta" , replace version(12)
+
+replace q7_w2 = q7_w1 if q7_w1==7
+
+
+replace q8_w2 = q8_w1 if q8_w1!=-77 & q8_w1!=.
+
+replace q9_CDU_w2 = q9_CDU_w1 if q9_CDU_w1!=-77 &  q9_CDU_w1 !=.
+replace q9_SPD_w2 = q9_SPD_w1 if q9_SPD_w1!=-77 &  q9_SPD_w1 !=.
+replace q9_B90_w2 = q9_B90_w1 if q9_B90_w1!=-77 &  q9_B90_w1 !=.
+replace q9_FDP_w2 = q9_FDP_w1 if q9_FDP_w1!=-77 &  q9_FDP_w1 !=.
+replace q9_LIN_w2 = q9_LIN_w1 if q9_LIN_w1!=-77 &  q9_LIN_w1 !=.
+replace q9_AFD_w2 = q9_AFD_w1 if q9_AFD_w1!=-77 &  q9_AFD_w1 !=.
+replace q9_oth_w2 = q9_oth_w1 if q9_oth_w1!=-77 &  q9_oth_w1 !=. 
+replace q9_inv_w2 = q9_inv_w1 if q9_inv_w1!=-77 &  q9_inv_w1 !=.
+replace q9_non_w2 = q9_non_w1 if q9_non_w1!=-77 &  q9_non_w1 !=.
+replace q9_dk_w2  = q9_dk_w1  if q9_dk_w1 !=-77 &  q9_dk_w1  !=.
+
+replace q10_CDU_w2 = q10_CDU_w1 if q10_CDU_w1!=-77 &  q10_CDU_w1 !=.
+replace q10_SPD_w2 = q10_SPD_w1 if q10_SPD_w1!=-77 &  q10_SPD_w1 !=.
+replace q10_B90_w2 = q10_B90_w1 if q10_B90_w1!=-77 &  q10_B90_w1 !=.
+replace q10_FDP_w2 = q10_FDP_w1 if q10_FDP_w1!=-77 &  q10_FDP_w1 !=.
+replace q10_LIN_w2 = q10_LIN_w1 if q10_LIN_w1!=-77 &  q10_LIN_w1 !=.
+replace q10_AFD_w2 = q10_AFD_w1 if q10_AFD_w1!=-77 &  q10_AFD_w1 !=.
+replace q10_oth_w2 = q10_oth_w1 if q10_oth_w1!=-77 &  q10_oth_w1 !=. 
+replace q10_inv_w2 = q10_inv_w1 if q10_inv_w1!=-77 &  q10_inv_w1 !=.
+replace q10_all_w2 = q10_all_w1 if q10_all_w1!=-77 &  q10_all_w1 !=.
+replace q10_dk_w2  = q10_dk_w1  if q10_dk_w1 !=-77 &  q10_dk_w1  !=.
+
+gen voted = 1 if  q24_w3==1
+
+replace voted=0 if q24_w3!=1 & q24_w3!=.
+tab voted
+
+gen party_affiliation =  q25_w3
+*replace party_affiliation = q8_w2 if party_affiliation==-77|party_affiliation==9|party_affiliation==.
+tab party_affiliation
+recode party (9=.) (8=.) (-77=.)
+label def PARTY 1"CDU" 2"SPD" 3"GREEN" 4"FDP" 5"LINK" 6"AFD" 7"Andere" 
+label val party PARTY
+
+gen AFD=1 if party==6
+replace AFD=0 if party!=6 & party!=. & party!=-77
+tab AFD
+
+gen LEFT=1 if party==5
+replace LEFT= 0 if party!=5 & party!=. & party!=-77
+tab LEFT
+
+
+gen CDU=1 if party==1
+replace CDU=0 if party!=1 & party!=. & party!=-77
+tab CDU
+
+gen SPD=1 if party==2
+replace SPD= 0 if party!=2 & party!=. & party!=-77
+tab SPD
+
+
+gen GREEN=1 if party==3
+replace GREEN=0 if party!=3 & party!=. & party!=-77
+tab GREEN
+
+gen FDP=1 if party==4
+replace FDP= 0 if party!=4 & party!=. & party!=-77
+tab FDP
+
+
+
+replace child_in_hh=0 if children!=. & child_in_hh==.
+replace num_child_hh= 0 if children!=. & num_child==. 
+replace num_child_hh= -1 if num_child_hh==. 
+replace child_in_hh= -1 if child_in_hh==. 
+replace children= -1 if children==. 
+
+gen undecided_w1 = 1 if q11_w1==9
+replace undecided_w1= 0 if q11_w1>=1&q11_w1<=7
+
+gen undecided_w2 = 1 if q11_w2==9
+replace undecided_w2= 0 if q11_w2>=1&q11_w2<=7
+
+saveold  "\\nas.uni-mannheim.de\uni-shares\swnsswml\Respondi\RESPONDI_w3\survey_daten\survey_data_all_waves.dta" , replace  version(12)
 
 **wave 1 data
 clear all
-use "U:\respondi sinus daten\survey_daten\survey_data_all_waves.dta", replace
+use "\\nas.uni-mannheim.de\uni-shares\swnsswml\Respondi\RESPONDI_w3\survey_daten\survey_data_all_waves.dta", replace
 drop *w3 *w2
-saveold "U:\respondi sinus daten\survey_daten\survey_data_w1.dta", replace version(12)
+saveold "\\nas.uni-mannheim.de\uni-shares\swnsswml\Respondi\RESPONDI_w3\survey_daten\survey_data_w1.dta", replace  version(12)
 
 **wave 2 data
 clear all
-use "U:\respondi sinus daten\survey_daten\survey_data_all_waves.dta", replace
+use "\\nas.uni-mannheim.de\uni-shares\swnsswml\Respondi\RESPONDI_w3\survey_daten\survey_data_all_waves.dta", replace
 drop *w3 *w1
-saveold "U:\respondi sinus daten\survey_daten\survey_data_w2.dta", replace version(12)
+saveold "\\nas.uni-mannheim.de\uni-shares\swnsswml\Respondi\RESPONDI_w3\survey_daten\survey_data_w2.dta", replace  version(12)
 
 **wave 3 data
 clear all
-use "U:\respondi sinus daten\survey_daten\survey_data_all_waves.dta", replace
+use "\\nas.uni-mannheim.de\uni-shares\swnsswml\Respondi\RESPONDI_w3\survey_daten\survey_data_all_waves.dta", replace
 drop *w2 *w1
-saveold "U:\respondi sinus daten\survey_daten\survey_data_w3.dta", replace version(12)
+saveold "\\nas.uni-mannheim.de\uni-shares\swnsswml\Respondi\RESPONDI_w3\survey_daten\survey_data_w3.dta", replace  version(12)
 

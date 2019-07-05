@@ -491,7 +491,7 @@ ggsave("p_resamp_c1.png", width = 7.5, height = 7)
 
 ggplot(resamp) +
   geom_boxplot(aes(y = logLoss, x = fct_rev(model), fill = model)) +
-  ylim(0.2, 0.5) +
+  ylim(0.3, 0.6) +
   labs(x = "") +
   labs(y = "logLoss") +
   coord_flip() + 
@@ -570,7 +570,7 @@ done(rtffile)
 # Performance at "optimal" threshold - CDU
 
 prop.table(table(X_back_track_train$CDU))
-# roc_xgb_c1_t <- coords(roc_xgb_c1, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.9))
+roc_xgb_c1_t <- coords(roc_xgb_c1, x = "best", best.method = "closest.topleft", best.weights = c(1, 0.25))
 
 c_xgb_c1 <- as.factor(ifelse(p_xgb_c1$CDU > roc_xgb_c1_t[[1]], "CDU", "not_CDU"))
 c_xgb_c2 <- as.factor(ifelse(p_xgb_c2$CDU > roc_xgb_c1_t[[1]], "CDU", "not_CDU"))
