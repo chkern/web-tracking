@@ -468,8 +468,6 @@ ggplot(imp_xgb_v6) +
     labels = imp_xgb_v6$varname)
 ggsave("p_imp_v.png", width = 6, height = 6)
 
-plot(varImp(xgb_a6), top = 10)
-
 ##################################################################################
 # Compare CV performance
 ##################################################################################
@@ -508,7 +506,7 @@ ggplot(resamp) +
   scale_fill_manual(values = c("#E6E6E6", "#AEAEAE", "#4D4D4D", "#4D4D4D", "#4D4D4D", "#4D4D4D")) +
   theme_bw() +
   theme(legend.position = "none") +
-  theme(text = element_text(size = 15))
+  theme(text = element_text(size = 18))
 ggsave("p_resamp_v1.png", width = 7.5, height = 7)
 
 ggplot(resamp) +
@@ -520,7 +518,7 @@ ggplot(resamp) +
   scale_fill_manual(values = c("#E6E6E6", "#AEAEAE", "#4D4D4D", "#4D4D4D", "#4D4D4D", "#4D4D4D")) +
   theme_bw() +
   theme(legend.position = "none") +
-  theme(text = element_text(size = 15))
+  theme(text = element_text(size = 18))
 ggsave("p_resamp_v2.png", width = 7.5, height = 7)
 
 difresamps <- diff(resamps)

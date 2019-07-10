@@ -933,7 +933,7 @@ ggplot(resamp) +
   coord_flip() + 
   theme_bw() +
   theme(legend.position = "none") +
-  theme(text = element_text(size = 15))
+  theme(text = element_text(size = 18))
 ggsave("p_resamp_d1.png", width = 7.5, height = 7)
 
 ggplot(resamp) +
@@ -944,7 +944,7 @@ ggplot(resamp) +
   coord_flip() + 
   theme_bw() +
   theme(legend.position = "none") +
-  theme(text = element_text(size = 15))
+  theme(text = element_text(size = 18))
 ggsave("p_resamp_d2.png", width = 7.5, height = 7)
 
 ##################################################################################
