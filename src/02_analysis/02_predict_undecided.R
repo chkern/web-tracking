@@ -556,7 +556,7 @@ imp_xgb_u6 <-
   mutate(order = 11 - row_number())
 
 match(imp_xgb_u6$varname, names(X_back_track_train))
-imp_xgb_u6$varname <- c("Gender", "Age", "Single, living w. partner", "News rel. d", "Android App", "Inc no answer", "News rel. n", "Payback mobil", "Other rel. n", "meinestadt.de")
+# imp_xgb_u6$varname <- c("Gender", "Age", "Single, living w. partner", "News rel. d", "Android App", "Inc no answer", "News rel. n", "Payback mobil", "Other rel. n", "meinestadt.de")
 
 ggplot(imp_xgb_u6) +
   geom_point(aes(x = Overall, y = order)) + 
@@ -607,7 +607,7 @@ ggplot(resamp1) +
   scale_fill_manual(values = c("#E6E6E6", "#AEAEAE", "#4D4D4D", "#4D4D4D", "#4D4D4D", "#4D4D4D")) +
   theme_bw() +
   theme(legend.position = "none") +
-  theme(text = element_text(size = 18))
+  theme(text = element_text(size = 20))
 ggsave("p_resamp_u1.png", width = 7.5, height = 7)
 
 ggplot(resamp1) +
@@ -619,7 +619,7 @@ ggplot(resamp1) +
   scale_fill_manual(values = c("#E6E6E6", "#AEAEAE", "#4D4D4D", "#4D4D4D", "#4D4D4D", "#4D4D4D")) +
   theme_bw() +
   theme(legend.position = "none") +
-  theme(text = element_text(size = 18))
+  theme(text = element_text(size = 20))
 ggsave("p_resamp_u2.png", width = 7.5, height = 7)
 
 difresamps1 <- diff(resamps1)

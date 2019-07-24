@@ -484,7 +484,7 @@ ggplot(resamp) +
   scale_fill_manual(values = c("#E6E6E6", "#AEAEAE", "#4D4D4D", "#4D4D4D", "#4D4D4D", "#4D4D4D")) +
   theme_bw() +
   theme(legend.position = "none") +
-  theme(text = element_text(size = 18))
+  theme(text = element_text(size = 20))
 ggsave("p_resamp_s1.png", width = 7.5, height = 7)
 
 ggplot(resamp) +
@@ -496,7 +496,7 @@ ggplot(resamp) +
   scale_fill_manual(values = c("#E6E6E6", "#AEAEAE", "#4D4D4D", "#4D4D4D", "#4D4D4D", "#4D4D4D")) +
   theme_bw() +
   theme(legend.position = "none") +
-  theme(text = element_text(size = 18))
+  theme(text = element_text(size = 20))
 ggsave("p_resamp_s2.png", width = 7.5, height = 7)
 
 difresamps <- diff(resamps)
